@@ -347,6 +347,7 @@ Context VCompiler::exprTypeCodeGen(Expression* expr, SymTable *symTable) {
 		cntxt = notExprCodeGen((NotExpr*) expr, symTable);
 		break;
 	case 17: // function call expression
+
 		break;
 	case 18: // domain expression
 		cntxt = domainExprCodeGen((DomainExpr*) expr, symTable);
@@ -373,15 +374,77 @@ Context VCompiler::exprTypeCodeGen(Expression* expr, SymTable *symTable) {
 	}
 	return cntxt;
 }
-Context VCompiler::libCallExprCodeGen(LibCallExpr *expr, SymTable *symtable) {
+Context VCompiler::libCallExprCodeGen(LibCallExpr *expr, SymTable *symTable) {
 	Context cntxt;
+	string funcName;
+	switch (expr->getCode()) {
+	case LibCallExpr::LIB_SQRT:
+		funcName = "sqrt(";
+		break;
+	case LibCallExpr::LIB_LOG2:
+		funcName = "log2(";
+		break;
+	case LibCallExpr::LIB_LOG10:
+		funcName = "log10(";
+		break;
+	case LibCallExpr::LIB_LOGE:
+		funcName = "log(";
+		break;
+	case LibCallExpr::LIB_EXPE:
+		funcName = "exp(";
+		break;
+	case LibCallExpr::LIB_EXP10:
+		funcName = "exp10(";
+		break;
+	case LibCallExpr::LIB_SIN:
+		funcName = "sin(";
+		break;
+	case LibCallExpr::LIB_COS:
+		funcName = "cos(";
+		break;
+	case LibCallExpr::LIB_TAN:
+		funcName = "tan(";
+		break;
+	case LibCallExpr::LIB_ASIN:
+		funcName = "asin(";
+		break;
+	case LibCallExpr::LIB_ACOS:
+		funcName = "acos(";
+		break;
+	case LibCallExpr::LIB_ATAN:
+		funcName = "atan(";
+		break;
+	default:
+		cout << "error in library call expression \n function not found"
+				<< endl;
+		break;
 
+	}
+	ExpressionPtr basePtr = expr->getBaseExpr();
+	Context baseCntxt = exprTypeCodeGen(basePtr.get(), symTable);
+	funcName += baseCntxt.getAllStmt()[0] + ")";
 	return cntxt;
 }
 Context VCompiler::funCallExprCodeGen(FuncallExpr *expr, SymTable *symTable) {
 	Context cntxt;
-	// how do i get arguments and function name ? write own public calls
 
+	NameExprPtr namePtr = expr->getFuncName();
+	Context nameCntxt = exprTypeCodeGen(namePtr.get(), symTable);
+	string name = nameCntxt.getAllStmt()[0];
+	name = name + "(";
+	ExpressionPtrVector vecPtr = expr->getArgs();
+	Context tempCntxt = exprTypeCodeGen(vecPtr[0].get(), symTable);
+	if (tempCntxt.getAllStmt().size() > 0) {
+		name += tempCntxt.getAllStmt()[0];
+	}
+	for (int i = 1; vecPtr.size(); i++) {
+		tempCntxt = exprTypeCodeGen(vecPtr[i].get(), symTable);
+		if (tempCntxt.getAllStmt().size() > 0) {
+			name += ("," + tempCntxt.getAllStmt()[0]);
+		}
+	}
+	name += ")";
+	cntxt.addStmt(name);
 	return cntxt;
 }
 Context VCompiler::notExprCodeGen(NotExpr *expr, SymTable *symTable) {
