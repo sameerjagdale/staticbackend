@@ -14,7 +14,19 @@ using namespace VRaptor;
 using namespace std;
 
 Context::Context() {
+	arrayFlag = false;
+}
 
+bool Context::isArray() {
+	return arrayFlag;
+}
+
+void Context::resetArrayFlag() {
+	arrayFlag = false;
+}
+
+void Context::setArrayFlag() {
+	arrayFlag = true;
 }
 vector<string> Context::getAllStmt() {
 	return list;
@@ -347,7 +359,7 @@ Context VCompiler::exprTypeCodeGen(Expression* expr, SymTable *symTable) {
 		cntxt = notExprCodeGen((NotExpr*) expr, symTable);
 		break;
 	case 17: // function call expression
-		cntxt = funCallExprCodeGen((FuncallExpr*) expr, symTable);
+
 		break;
 	case 18: // domain expression
 		cntxt = domainExprCodeGen((DomainExpr*) expr, symTable);
@@ -357,7 +369,6 @@ Context VCompiler::exprTypeCodeGen(Expression* expr, SymTable *symTable) {
 	case 20: // dim vector
 		break;
 	case 21: // library call expression
-		cntxt = libCallExprCodeGen((LibCallExpr*) expr, symTable);
 		break;
 	case 22: // alloc expression
 		break;
@@ -522,8 +533,8 @@ Context VCompiler::domainExprCodeGen(DomainExpr *expr, SymTable *symTable) {
 Context VCompiler::nameExprCodeGen(NameExpr *expr, SymTable *symTable) {
 	Context cntxt;
 
-	VTypePtr vptr = expr->getType();
-	VType *vtype = vptr.get();
+//	VTypePtr vptr = expr->getType();
+//	VType *vtype = vptr.get();
 
 	string name = symTable->getName(expr->getId());
 	cntxt.addStmt(name);
@@ -554,6 +565,7 @@ Context VCompiler::binaryExprCodeGen(BinaryExpr*expr, SymTable *symTable) {
 		}
 
 	}
+
 	lStr = "(" + lStr;
 	rStr += ")";
 	cntxt.addStmt(lStr);
