@@ -17,19 +17,21 @@ namespace VRaptor {
 class Context {
 
 	vector<string> list;
+	bool arrayFlag;
 public:
 	Context();
 	void addStmt(const string stmt);
 	vector<string> getAllStmt();
-
-
+	void setArrayFlag();
+	void resetArrayFlag();
+	bool isArray();
 };
 
 class VCompiler {
 private:
 	Context stmtTypeCodeGen(Statement *stmt, SymTable *symTable);
 	Context exprTypeCodeGen(Expression* expr, SymTable *symTable);
-	Context vTypeCodeGen(VType*returnType,SymTable *symTable);
+	Context vTypeCodeGen(VType*returnType, SymTable *symTable);
 	Context scalarTypeCodeGen(ScalarType *vtype);
 	Context arrayTypeCodeGen(ArrayType* type, SymTable *symTable);
 public:
