@@ -347,7 +347,7 @@ Context VCompiler::exprTypeCodeGen(Expression* expr, SymTable *symTable) {
 		cntxt = notExprCodeGen((NotExpr*) expr, symTable);
 		break;
 	case 17: // function call expression
-
+		cntxt = funCallExprCodeGen((FuncallExpr*) expr, symTable);
 		break;
 	case 18: // domain expression
 		cntxt = domainExprCodeGen((DomainExpr*) expr, symTable);
@@ -357,6 +357,7 @@ Context VCompiler::exprTypeCodeGen(Expression* expr, SymTable *symTable) {
 	case 20: // dim vector
 		break;
 	case 21: // library call expression
+		cntxt = libCallExprCodeGen((LibCallExpr*) expr, symTable);
 		break;
 	case 22: // alloc expression
 		break;
