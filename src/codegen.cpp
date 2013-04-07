@@ -191,6 +191,45 @@ Context VCompiler::stmtCodeGen(Statement *stmt, SymTable *symTable) {
 
 	return cntxt;
 }
+
+Context VCompiler::pForStmtCodeGen(PforStmt *stmt, SymTable *symTable) {
+	Context cntxt;
+	vector<int> privateVec = stmt->getPrivateVars();
+	string ompStr = "#pragma omp parallel for private(" + privateVec[0];
+	for (int i = 1; i < privateVec.size(); i++) {
+		ompStr += "," + privateVec[i];
+	}
+	ompStr += ")\n";
+	cntxt.addStmt(ompStr);
+	StmtPtr sPtr = stmt->getBody();
+	Statement * bodyStmt = sPtr.get();
+	ExpressionPtr domainPtr = stmt->getDomain();
+	Context domainCntxt = exprTypeCodeGen(domainPtr.get(), symTable);
+	Context bodyCntxt = stmtTypeCodeGen(bodyStmt, symTable);
+
+	string initStmt, compStmt, iterStmt;
+	vector<string> domainVec = domainCntxt.getAllStmt();
+	vector<int> iterVar = stmt->getIterVars();
+	string var = symTable->getName(iterVar[0]);
+	initStmt = var + "=" + domainVec[0 * 3];
+	compStmt = var + "<" + domainVec[0 * 3 + 1];
+	iterStmt = var + "=" + var + "+" + domainVec[0 * 3 + 2];
+	for (int i = 1; i < iterVar.size();) {
+		var = symTable->getName(iterVar[i]);
+		initStmt += "," + var + "=" + domainVec[i * 3];
+		compStmt += "," + var + "<" + domainVec[i * 3 + 1];
+		iterStmt += "," + var + "=" + var + "+" + domainVec[i * 3 + 2];
+	}
+	cntxt.addStmt("for(" + initStmt + ";" + compStmt + ";" + iterStmt + ")\n");
+	cntxt.addStmt("{\n");
+	vector<string> bodyVec = bodyCntxt.getAllStmt();
+	for (int i = 0; i < bodyVec.size(); i++) {
+		cntxt.addStmt(bodyVec[i]);
+
+	}
+	cntxt.addStmt("}\n");
+	return cntxt;
+}
 Context VCompiler::returnStmtCodeGen(ReturnStmt *stmt, SymTable *symTable) {
 	Context cntxt;
 

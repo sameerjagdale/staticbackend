@@ -53,6 +53,7 @@ public:
 	Context ifStmtCodeGen(IfStmt *stmt, SymTable * symTable);
 	Context whileStmtCodeGen(WhileStmt *stmt, SymTable *symTable);
 	Context refOpStmtCodeGen(RefOpStmt stmt, SymTable *symTable);
+	Context pForStmtCodeGen(PforStmt *stmt,SymTable *symTable);
 
 	Context binaryExprCodeGen(BinaryExpr *expr, SymTable *symTable);
 	Context multExprCodeGen(MultExpr*expr, SymTable *symTable);
