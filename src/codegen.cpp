@@ -10,6 +10,7 @@
 #include<iostream>
 #include<string>
 #include<sstream>
+#include <vectorAnalysis.hpp>
 using namespace VRaptor;
 using namespace std;
 
@@ -729,6 +730,9 @@ Context VCompiler::refOpStmtCodeGen(RefOpStmt stmt, SymTable *symTable) {
 }
 Context VCompiler::forStmtCodeGen(ForStmt *stmt, SymTable *symTable) {
 	Context cntxt;
+	VectorAnalysis analysis;
+	analysis.analyse((StmtList*) stmt->getBody().get());
+
 	StmtPtr sPtr = stmt->getBody();
 	Statement * bodyStmt = sPtr.get();
 	ExpressionPtr domainPtr = stmt->getDomain();
