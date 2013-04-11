@@ -7,10 +7,7 @@
  */
 ///Contains Methods which parse the VRIR
 #include <codegen.hpp>
-#include<iostream>
-#include<string>
-#include<sstream>
-#include <vectorAnalysis.hpp>
+
 using namespace VRaptor;
 using namespace std;
 

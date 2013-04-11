@@ -10,6 +10,10 @@
 #endif /* CODEGEN_HPP_ */
 #include "vraptor.hpp"
 #include <vector>
+#include<iostream>
+#include<string>
+#include<sstream>
+#include <vectorAnalysis.hpp>
 //using namespace VRaptor;
 using std::vector;
 using std::string;
@@ -53,7 +57,7 @@ public:
 	Context ifStmtCodeGen(IfStmt *stmt, SymTable * symTable);
 	Context whileStmtCodeGen(WhileStmt *stmt, SymTable *symTable);
 	Context refOpStmtCodeGen(RefOpStmt stmt, SymTable *symTable);
-	Context pForStmtCodeGen(PforStmt *stmt,SymTable *symTable);
+	Context pForStmtCodeGen(PforStmt *stmt, SymTable *symTable);
 
 	Context binaryExprCodeGen(BinaryExpr *expr, SymTable *symTable);
 	Context multExprCodeGen(MultExpr*expr, SymTable *symTable);
