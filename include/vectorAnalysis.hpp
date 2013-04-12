@@ -17,12 +17,13 @@ typedef struct {
 } StmtStruct;
 typedef unordered_map<int, int> VarMap; // array id to index id
 typedef unordered_map<int, vector<int>> StmtMap; // array id to stmt vector
-
+typedef unordered_map<int,bool> ArrayMap;
 class VectorAnalysis {
 private:
 	VarMap varMap;
 	StmtMap stmtMap;
 	bitset<MAX> stmtSet;
+	ArrayMap arrayMap;
 	bool invalidLoop;
 public:
 	VectorAnalysis() {

@@ -2,13 +2,15 @@
 #include <vraptor.hpp>
 
 void VectorAnalysis::analyse(StmtList *stmt) {
+	bool val;
 	for (int i = 0; i < stmt->getNumChildren(); i++) {
 		if (invalidLoop) {
 			break;
 		}
 		switch (stmt->getChild(i).get()->getStmtType()) {
 		case Statement::STMT_ASSIGN:
-			assignStmtVectorAnalysis((AssignStmt*) stmt->getChild(i).get(), i);
+			 val= assignStmtVectorAnalysis((AssignStmt*) stmt->getChild(i).get(), i);
+			stmtSet.set(i,val);
 			break;
 		default:
 			stmtSet.reset();
@@ -38,9 +40,15 @@ bool VectorAnalysis::indexExprVectorAnalysis(IndexExpr*expr, int stmtNo) {
 	if (expr->getIndices().size() > 1) {
 		return false;
 	}
-	std::unordered_map<std::string, double>::const_iterator val = varMap.find(
+	std::unordered_map<int,bool>::const_iterator arrayVal=arrayMap.find(expr->getArrayId());
+	if(arrayVal!=arrayMap.end()){
+		if(arrayVal->second){
+			return false;
+		}
+	}
+	std::unordered_map<int,int>::const_iterator val = varMap.find(
 			expr->getArrayId());
-	if (val == varMap.end) {
+	if (val == varMap.end()) {
 		Expression *indxExpr = expr->getIndices()[0].get();
 		if (indxExpr->getExprType() != Expression::NAME_EXPR) {
 			return false;
@@ -57,4 +65,30 @@ bool VectorAnalysis::indexExprVectorAnalysis(IndexExpr*expr, int stmtNo) {
 				std::pair<int, vector<int>>(expr->getArrayId(), stmtVector));
 		return true;
 	}
+	else{
+		Expression *indxExpr=expr->getIndices()[0].get();
+		if(indxExpr->getExprType()!=Expression::NAME_EXPR){
+			return false;
+		}		
+		else{
+			NameExpr *name=(NameExpr*)indxExpr;
+			indxId=name->getId();
+		}	
+		int id =val->second;
+		if(id==indxId){
+			std::unordered_map<int,vector<int>>::const_iterator stmtIter=stmtMap.find(expr->getArrayId());
+		
+			vector<int> stmtVec=stmtIter->second;
+			stmtVec.push_back(stmtNo);
+			stmtMap.insert(std::pair<int,vector<int>>(expr->getArrayId(),stmtVec));
+			return true;
+		}		
+		else{
+			return false;
+		}
+				 
+	}
+}
+bool VectorAnalysis::canVectorise(int stmtNo){
+	return stmtSet[stmtNo];
 }
