@@ -13,6 +13,7 @@
 #include<iostream>
 #include<string>
 #include<sstream>
+#include<stdlib.h>
 #include <vectorAnalysis.hpp>
 //using namespace VRaptor;
 using std::vector;
@@ -22,6 +23,7 @@ class Context {
 
 	vector<string> list;
 	bool arrayFlag;
+
 public:
 	Context();
 	void addStmt(const string stmt);
@@ -38,7 +40,13 @@ private:
 	Context vTypeCodeGen(VType*returnType, SymTable *symTable);
 	Context scalarTypeCodeGen(ScalarType *vtype);
 	Context arrayTypeCodeGen(ArrayType* type, SymTable *symTable);
+	bool enableOpenMP;
+	bool enableSse;
 public:
+	bool getSseFlag();
+	void setSseFlag(bool);
+	bool getOpenmpFlag();
+	void setOpenMpFlag(bool);
 	Context funcCodeGen(VFunction *func);
 	Context stmtCodeGen(Statement *stmt, SymTable *symTable);
 	Context forStmtCodeGen(ForStmt *stmt, SymTable *symTable);
@@ -72,6 +80,7 @@ public:
 	Context funCallExprCodeGen(FuncallExpr *expr, SymTable *symTable);
 	Context libCallExprCodeGen(LibCallExpr *expr, SymTable *symtable);
 	Context negateExprCodeGen(NegateExpr *expr, SymTable *symTable);
+	Context vectoriseStmt(AssignStmt* stmt, int size, SymTable *symTable);
 };
 
 }
