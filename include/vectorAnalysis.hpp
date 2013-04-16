@@ -17,7 +17,7 @@ typedef struct {
 } StmtStruct;
 typedef unordered_map<int, int> VarMap; // array id to index id
 typedef unordered_map<int, vector<int>> StmtMap; // array id to stmt vector
-typedef unordered_map<int,bool> ArrayMap;
+typedef unordered_map<int, bool> ArrayMap;
 class VectorAnalysis {
 private:
 	VarMap varMap;
@@ -30,8 +30,8 @@ public:
 		invalidLoop = false;
 	}
 	void analyse(StmtList *stmt);
-	bool assignStmtVectorAnalysis(AssignStmt*,int stmtNo);
-	bool binaryExprVectorAnalysis(BinaryExpr*,int stmtNo);
-	bool indexExprVectorAnalysis(IndexExpr*,int stmtNo);
+	bool assignStmtVectorAnalysis(AssignStmt*, int stmtNo);
+	bool binaryExprVectorAnalysis(BinaryExpr*, int stmtNo);
+	bool indexExprVectorAnalysis(IndexExpr*, int stmtNo);
 	bool canVectorise(int stmtNo);
 };

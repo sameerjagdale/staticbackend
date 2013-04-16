@@ -752,12 +752,11 @@ Context VCompiler::forStmtCodeGen(ForStmt *stmt, SymTable *symTable) {
 		for (int i = 0; i < bodyStmt->getNumChildren(); i++) {
 			if (analysis.canVectorise(i)) {
 				cout << "statement " << i << " can be vectorized" << endl;
-				vectoriseStmt((AssignStmt*) bodyStmt->getChild(i), size,
+				vectoriseStmt((AssignStmt*) bodyStmt->getChild(i).get(), size,
 						symTable);
 			}
 		}
 	}
-
 
 	initStmt = var + "=" + domainVec[0 * 3];
 	compStmt = var + "<" + domainVec[0 * 3 + 1];
