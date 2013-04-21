@@ -174,22 +174,28 @@ Context VCompiler::funcCodeGen(VFunction *func) {
 			cntxt.addStmt(varType + " " + varName + ";\n");
 		}
 	}
+	//array data
 	ostringstream convert;
 
 	for (int i = 0; i < idVec.size(); i++) {
-		VType *vtype = symTable->getType(idVec[i]);
+		VType *vtype = symTable->getType(idVec[i]).get();
 		if (vtype->getBasicType() == 2) {
-			Context tempCntxt = vTypeCodeGen(vtype, symTable);
+			ArrayType *array = (ArrayType*) vtype;
+			Context tempCntxt = scalarTypeCodeGen(
+					array->getElementType().get());
+
 			string name = symTable->getName(idVec[i]);
 			convert << DATA_OFFSET;
 
 			cntxt.addStmt(
 					tempCntxt.getAllStmt()[0] + " *" + name + "_data=*(" + name
 							+ "+" + convert.str() + ") ;\n");
+			convert.str("");
 			convert << DIM_OFFSET;
 			cntxt.addStmt(
-					"int *" + symTable->getName(idVec[i]) + "_dim;+*(" + name
+					"int *" + symTable->getName(idVec[i]) + "_dim = *(" + name
 							+ "+" + convert.str() + ") ;\n");
+			convert.str("");
 		}
 	}
 	//function body
