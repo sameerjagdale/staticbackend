@@ -5,7 +5,7 @@
  *      Author: Sameer Jagdale
  *
  */
-///Contains Methods which parse the VRIR
+///Contains Methods which generate code C++ from  the VRIR
 #include <codegen.hpp>
 
 using namespace VRaptor;
@@ -56,13 +56,13 @@ Context VCompiler::scalarTypeCodeGen(ScalarType *vtype) {
 Context VCompiler::arrayTypeCodeGen(ArrayType* type, SymTable *symTable) {
 	Context cntxt;
 
-	//cntxt.addStmt("void*");
-	Context tempCntxt = scalarTypeCodeGen(
-			(ScalarType*) type->getElementType().get());
-	if (cntxt.getAllStmt().size() > 0) {
-		cout << "entered array type if block" << endl;
-		cntxt.addStmt(tempCntxt.getAllStmt()[0] + "*");
-	}
+	/*Context tempCntxt = scalarTypeCodeGen(
+	 (ScalarType*) type->getElementType().get());
+	 if (tempCntxt.getAllStmt().size() > 0) {
+
+	 cntxt.addStmt(tempCntxt.getAllStmt()[0] + "*");
+	 }*/
+	cntxt.addStmt("void*");
 	return cntxt;
 }
 Context VCompiler::moduleCodeGen(VModule *vm) {
@@ -81,6 +81,7 @@ Context VCompiler::moduleCodeGen(VModule *vm) {
 }
 Context VCompiler::vTypeCodeGen(VType* vType, SymTable *symTable) {
 	Context cntxt;
+
 	switch (vType->getBasicType()) {
 	case VType::SCALAR_TYPE:
 		cntxt = scalarTypeCodeGen((ScalarType*) vType);
@@ -91,9 +92,11 @@ Context VCompiler::vTypeCodeGen(VType* vType, SymTable *symTable) {
 	case VType::ARRAY_TYPE:
 
 		cntxt = arrayTypeCodeGen((ArrayType*) vType, symTable);
+
 		break;
 	case VType::UNIT_TYPE:
-		cout << "cannot generate code for unit type" << endl;
+		cntxt.addStmt("void");
+
 		break;
 	default:
 		cntxt.addStmt("void");
@@ -116,23 +119,26 @@ Context VCompiler::funcCodeGen(VFunction *func) {
 	} else {
 		ret = "void";
 	}
+
 	string str(ret + " " + func->getName() + "(");
 	int id;
 	string argName, argType;
 	if (func->m_args.size() > 0) {
 		id = func->m_args[0].m_id;
 		argName = func->getSymTable()->getName(id);
+
 		argCntxt = vTypeCodeGen(func->getSymTable()->getType(id).get(),
 				func->getSymTable());
+
 		if (argCntxt.getAllStmt().size() <= 0) {
-			cout << "error while fetching arguments ";
+
+			cout << "error while fetching arguments " << endl;
 			return cntxt;
 		}
 		argType = argCntxt.getAllStmt()[0];
 		str += argType + " " + argName;
-		//if argument is an array
-		/*if (func->getSymTable()->getType(id).get()->getBasicType() == 2)
-		 str += "[]";*/
+		//if argument is an arraycntxt.addStmt(tempCntxt.getAllStmt()[0] + "*");
+
 	}
 
 	for (int i = 1; i < func->m_args.size(); i++) {
@@ -166,6 +172,24 @@ Context VCompiler::funcCodeGen(VFunction *func) {
 			string varType = varCntxt.getAllStmt()[0];
 			string varName = symTable->getName(i);
 			cntxt.addStmt(varType + " " + varName + ";\n");
+		}
+	}
+	ostringstream convert;
+
+	for (int i = 0; i < idVec.size(); i++) {
+		VType *vtype = symTable->getType(idVec[i]);
+		if (vtype->getBasicType() == 2) {
+			Context tempCntxt = vTypeCodeGen(vtype, symTable);
+			string name = symTable->getName(idVec[i]);
+			convert << DATA_OFFSET;
+
+			cntxt.addStmt(
+					tempCntxt.getAllStmt()[0] + " *" + name + "_data=*(" + name
+							+ "+" + convert.str() + ") ;\n");
+			convert << DIM_OFFSET;
+			cntxt.addStmt(
+					"int *" + symTable->getName(idVec[i]) + "_dim;+*(" + name
+							+ "+" + convert.str() + ") ;\n");
 		}
 	}
 	//function body
@@ -378,6 +402,7 @@ Context VCompiler::exprTypeCodeGen(Expression* expr, SymTable *symTable) {
 		cntxt = negateExprCodeGen((NegateExpr*) expr, symTable);
 		break;
 	case 8: // matrix mult
+
 		break;
 	case 9: //Transpose
 		break;
@@ -413,6 +438,7 @@ Context VCompiler::exprTypeCodeGen(Expression* expr, SymTable *symTable) {
 	case 20: // dim vector
 		break;
 	case 21: // library call expression
+		cntxt = libCallExprCodeGen((LibCallExpr*) expr, symTable);
 		break;
 	case 22: // alloc expression
 		break;
@@ -708,28 +734,36 @@ Context VCompiler::indexExprCodeGen(IndexExpr *expr, SymTable *symTable) {
 //if (nameCntxt.getAllStmt().size() > 0) {
 	name = nameCntxt.getAllStmt()[0];
 //	}
+	name += "_data";
+	name = "*(" + name;
+	cout << name;
 	ExpressionPtrVector indxPtrVec = expr->getIndices();
 	for (int i = 0; i < indxPtrVec.size(); i++) {
 		Expression *indxExpr = indxPtrVec[i].get();
 		Context indxCntxt = exprTypeCodeGen(indxExpr, symTable);
 		if (indxCntxt.getAllStmt().size() > 0) {
-			name += ("[" + indxCntxt.getAllStmt()[0] + "]");
+			string indxStr = indxCntxt.getAllStmt()[0];
+
+			for (int j = i + 1; j < indxPtrVec.size(); j++) {
+				string jstr;
+				ostringstream convert;
+				convert << j;
+				jstr = convert.str();
+				indxStr += "*" + name + "_dim[" + jstr + "]";
+			}
+			name += "+" + indxStr;
+
+			//name += ("[" + indxCntxt.getAllStmt()[0] + "]");
 		}
 	}
+	name += ")";
 	cntxt.addStmt(name);
 	return cntxt;
 
 }
 Context VCompiler::refOpStmtCodeGen(RefOpStmt stmt, SymTable *symTable) {
 	Context cntxt;
-	/*Expression *nameExpr = stmt.getName().get();
-	 Context nameCntxt = exprTypeCodeGen(nameExpr, symTable);
-	 string name = nameCntxt.getAllStmt()[0];
-	 if (stmt.isIncr()) {
-	 cntxt.addStmt(name + "++;\n");
-	 } else {
-	 cntxt.addStmt(name + "--;\n");
-	 }*/
+
 	return cntxt;
 }
 Context VCompiler::forStmtCodeGen(ForStmt *stmt, SymTable *symTable) {
