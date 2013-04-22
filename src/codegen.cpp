@@ -68,6 +68,7 @@ Context VCompiler::arrayTypeCodeGen(ArrayType* type, SymTable *symTable) {
 Context VCompiler::moduleCodeGen(VModule *vm) {
 	Context cntxt;
 	cntxt.addStmt("#include<math.h> \n");
+	cntxt.addStmt("#include<matrixOps.hpp>\n");
 	vector<VFunction*> funcList = vm->m_funcs;
 	for (int i = 0; i < funcList.size(); i++) {
 
@@ -227,15 +228,21 @@ Context VCompiler::stmtCodeGen(Statement *stmt, SymTable *symTable) {
 
 Context VCompiler::pForStmtCodeGen(PforStmt *stmt, SymTable *symTable) {
 	Context cntxt;
-
+	cout << "entered parallel for" << endl;
+	cout << getOpenmpFlag() << endl;
 	if (getOpenmpFlag()) {
-
+		cout << "entered openmp if block" << endl;
 		vector<int> privateVec = stmt->getPrivateVars();
-		string ompStr = "#pragma omp parallel for private(" + privateVec[0];
-		for (int i = 1; i < privateVec.size(); i++) {
-			ompStr += "," + privateVec[i];
+
+		string ompStr = "#pragma omp parallel for";
+		if (privateVec.size() > 0) {
+			ompStr += " private(" + privateVec[0];
+			for (int i = 1; i < privateVec.size(); i++) {
+				ompStr += "," + privateVec[i];
+			}
+			ompStr += ")";
 		}
-		ompStr += ")\n";
+		ompStr += "\n";
 		cntxt.addStmt(ompStr);
 	}
 	StmtPtr sPtr = stmt->getBody();
