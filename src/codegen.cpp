@@ -179,7 +179,7 @@ Context VCompiler::funcCodeGen(VFunction *func) {
 
 	for (int i = 0; i < idVec.size(); i++) {
 		VType *vtype = symTable->getType(idVec[i]).get();
-		if (vtype->getBasicType() == 2) {
+		if (vtype->getBasicType() == VType::ARRAY_TYPE) {
 			ArrayType *array = (ArrayType*) vtype;
 			Context tempCntxt = scalarTypeCodeGen(
 					array->getElementType().get());
@@ -272,8 +272,11 @@ Context VCompiler::returnStmtCodeGen(ReturnStmt *stmt, SymTable *symTable) {
 	string retStr = "return ";
 	if (ridVec.size() > 0) {
 		retStr += symTable->getName(ridVec[0]);
-		for (int i = 1; i < ridVec.size(); i++) {
-			retStr += "," + ridVec[i];
+		/*for (int i = 1; i < ridVec.size(); i++) {
+		 retStr += "," + ridVec[i];
+		 }*/
+		if (ridVec.size() > 1) {
+			cout << "compiler does not handle multiple returns" << endl;
 		}
 	}
 	cntxt.addStmt(retStr + ";\n");
@@ -378,6 +381,59 @@ Context VCompiler::stmtTypeCodeGen(Statement *stmt, SymTable *symTable) {
 	}
 	return cntxt;
 }
+Context VCompiler::mMultExprCodeGen(MmultExpr* expr, SymTable *symTable) {
+	Context cntxt;
+	if (expr->getLhs().get()->getExprType() != Expression::NAME_EXPR) {
+		cout << "LHS not name expression. Cannot generate code" << endl;
+		return cntxt;
+	}
+	if (expr->getRhs().get()->getExprType() != Expression::NAME_EXPR) {
+		cout << "RHS not name expression. Cannot generate code" << endl;
+		return cntxt;
+	}
+	Context lcntxt = exprTypeCodeGen(expr->getLhs().get(), symTable);
+	Context rcntxt = exprTypeCodeGen(expr->getRhs().get(), symTable);
+	string lstr = lcntxt.getAllStmt()[0];
+	string rstr = rcntxt.getAllStmt()[0];
+	NameExpr *lexpr = (NameExpr*) expr->getLhs().get();
+	VType *ltype = symTable->getType(lexpr->getId()).get();
+	if (ltype->getBasicType() != VType::ARRAY_TYPE) {
+		cout << "variable is not an array. cannot generate multiplication code"
+				<< endl;
+		return cntxt;
+	}
+	ArrayType *larray = (ArrayType*) ltype;
+	Context ltypeCntxt = scalarTypeCodeGen(larray->getElementType().get());
+	NameExpr *rexpr = (NameExpr*) expr->getRhs().get();
+	VType *rtype = symTable->getType(rexpr->getId()).get();
+	if (rtype->getBasicType() != VType::ARRAY_TYPE) {
+		cout << "variable is not an array. cannot generate multiplication code"
+				<< endl;
+		return cntxt;
+	}
+	ArrayType *rarray = (ArrayType*) rtype;
+	Context rtypeCntxt = scalarTypeCodeGen(rarray->getElementType().get());
+	string ltypeStr;
+	if (ltypeCntxt.getAllStmt().size() > 0) {
+		ltypeStr = ltypeCntxt.getAllStmt()[0];
+	}
+	string rtypeStr;
+	if (rtypeCntxt.getAllStmt().size() > 0) {
+		rtypeStr = ltypeCntxt.getAllStmt()[0];
+	}
+	if (rtypeStr.compare(ltypeStr) != 0) {
+		cout << "arrays not of the same type. expression cannot be compiled"
+				<< endl;
+		return cntxt;
+	}
+	string lname = symTable->getName(lexpr->getId());
+	string rname = symTable->getName(rexpr->getId());
+	cntxt.addStmt(
+			"matrixMult_" + rtypeStr + "(" + lname + +"_data" + "," + rname
+					+ +"_data" + "," + lname + "_dim[0]" + lname + "_dim[1]"
+					+ rname + "_dim[1]" + ")");
+	return cntxt;
+}
 Context VCompiler::exprTypeCodeGen(Expression* expr, SymTable *symTable) {
 	Context cntxt;
 
@@ -407,8 +463,8 @@ Context VCompiler::exprTypeCodeGen(Expression* expr, SymTable *symTable) {
 	case 7: //Negate expr
 		cntxt = negateExprCodeGen((NegateExpr*) expr, symTable);
 		break;
-	case 8: // matrix mult
-
+	case 8: // matrix multiplication
+		cntxt = mMultExprCodeGen((MmultExpr*) expr, symTable);
 		break;
 	case 9: //Transpose
 		break;
@@ -728,10 +784,44 @@ Context VCompiler::divExprCodeGen(DivExpr *expr, SymTable *symTable) {
 Context VCompiler::plusExprCodeGen(PlusExpr* expr, SymTable *symTable) {
 	Context cntxt;
 
+	if (expr->getLhs().get()->getExprType() == Expression::NAME_EXPR
+			&& expr->getRhs().get()->getExprType() == Expression::NAME_EXPR) {
+		NameExpr * lnameExpr = (NameExpr*) expr->getLhs().get();
+		NameExpr * rnameExpr = (NameExpr*) expr->getRhs().get();
+		if (symTable->getType(rnameExpr->getId()).get()->getBasicType()
+				== VType::ARRAY_TYPE
+				&& symTable->getType(lnameExpr->getId()).get()->getBasicType()
+						== VType::ARRAY_TYPE) {
+			string lnameStr = symTable->getName(lnameExpr->getId());
+			string rnameStr = symTable->getName(rnameExpr->getId());
+			ArrayType *larray = (ArrayType*) symTable->getType(
+					lnameExpr->getId()).get();
+			ArrayType *rarray = (ArrayType*) symTable->getType(
+					rnameExpr->getId()).get();
+			Context ltypeCntxt = scalarTypeCodeGen(
+					larray->getElementType().get());
+			Context rtypeCntxt = scalarTypeCodeGen(
+					rarray->getElementType().get());
+			string ltypeStr = ltypeCntxt.getAllStmt()[0];
+			if (ltypeStr.compare(rtypeCntxt.getAllStmt()[0]) != 0) {
+				cout << "types not same. cannot generate codes to add arrays"
+						<< endl;
+			}
+			string lname = symTable->getName(lnameExpr->getId());
+			string rname = symTable->getName(rnameExpr->getId());
+			cntxt.addStmt(
+					"matrixSum_" + ltypeStr + "(" + lname + "_data," + rname
+							+ "_data," + lname + "_dim[0]" + lname
+							+ "_dim[1])");
+			return cntxt;
+		}
+	}
+
 	Context tempCntxt = binaryExprCodeGen(expr, symTable);
 	string lStr = tempCntxt.getAllStmt()[0];
 	string rStr = tempCntxt.getAllStmt()[1];
 	cntxt.addStmt(lStr + " + " + rStr);
+
 	return cntxt;
 }
 Context VCompiler::indexExprCodeGen(IndexExpr *expr, SymTable *symTable) {
@@ -795,7 +885,7 @@ Context VCompiler::forStmtCodeGen(ForStmt *stmt, SymTable *symTable) {
 	vector<int> iterVar = stmt->getIterVars();
 	string var = symTable->getName(iterVar[0]);
 
-	//vectorisation
+//vectorisation
 	if (getSseFlag()) {
 		int size = atoi(domainVec[1].c_str());
 		for (int i = 0; i < bodyStmt->getNumChildren(); i++) {

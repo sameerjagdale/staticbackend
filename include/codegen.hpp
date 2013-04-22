@@ -61,7 +61,9 @@ public:
 	Context stmtListCodeGen(StmtList *stmt, SymTable *symTable);
 	Context indexExprCodeGen(IndexExpr *expr, SymTable *symTable);
 	Context minusExprCodeGen(MinusExpr *expr, SymTable *symTable);
+	Context mMultExprCodeGen(MmultExpr* expr, SymTable *symTable);
 	Context returnStmtCodeGen(ReturnStmt *stmt, SymTable *symTable);
+
 	Context moduleCodeGen(VModule *vm);
 	Context breakStmtCodeGen(BreakStmt *stmt);
 	Context continueStmtCodeGen(ContinueStmt *stmt);
