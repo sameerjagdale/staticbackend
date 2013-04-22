@@ -39,11 +39,11 @@ Context VCompiler::scalarTypeCodeGen(ScalarType *vtype) {
 
 	switch (vtype->getScalarTag()) {
 	case ScalarType::SCALAR_INT:
-		cntxt.addStmt("int");
+		cntxt.addStmt("long");
 		break;
 	case ScalarType::SCALAR_FLOAT:
 
-		cntxt.addStmt("float");
+		cntxt.addStmt("double");
 		break;
 	case ScalarType::SCALAR_BOOL:
 		cntxt.addStmt("bool");
@@ -193,7 +193,7 @@ Context VCompiler::funcCodeGen(VFunction *func) {
 			convert.str("");
 			convert << DIM_OFFSET;
 			cntxt.addStmt(
-					"int *" + symTable->getName(idVec[i]) + "_dim = *(" + name
+					"long *" + symTable->getName(idVec[i]) + "_dim = *(" + name
 							+ "+" + convert.str() + ") ;\n");
 			convert.str("");
 		}
@@ -227,7 +227,9 @@ Context VCompiler::stmtCodeGen(Statement *stmt, SymTable *symTable) {
 
 Context VCompiler::pForStmtCodeGen(PforStmt *stmt, SymTable *symTable) {
 	Context cntxt;
+
 	if (getOpenmpFlag()) {
+
 		vector<int> privateVec = stmt->getPrivateVars();
 		string ompStr = "#pragma omp parallel for private(" + privateVec[0];
 		for (int i = 1; i < privateVec.size(); i++) {
@@ -240,23 +242,25 @@ Context VCompiler::pForStmtCodeGen(PforStmt *stmt, SymTable *symTable) {
 	Statement * bodyStmt = sPtr.get();
 	ExpressionPtr domainPtr = stmt->getDomain();
 	Context domainCntxt = exprTypeCodeGen(domainPtr.get(), symTable);
-	Context bodyCntxt = stmtTypeCodeGen(bodyStmt, symTable);
 
 	string initStmt, compStmt, iterStmt;
 	vector<string> domainVec = domainCntxt.getAllStmt();
 	vector<int> iterVar = stmt->getIterVars();
-	string var = symTable->getName(iterVar[0]);
-	initStmt = var + "=" + domainVec[0 * 3];
-	compStmt = var + "<" + domainVec[0 * 3 + 1];
-	iterStmt = var + "=" + var + "+" + domainVec[0 * 3 + 2];
-	for (int i = 1; i < iterVar.size();) {
+	string var;
+	int count = iterVar.size();
+
+	for (int i = 0; i < iterVar.size(); i++) {
 		var = symTable->getName(iterVar[i]);
-		initStmt += "," + var + "=" + domainVec[i * 3];
-		compStmt += "," + var + "<" + domainVec[i * 3 + 1];
-		iterStmt += "," + var + "=" + var + "+" + domainVec[i * 3 + 2];
+		initStmt = var + "=" + domainVec[i];
+		compStmt = var + "<" + domainVec[i + count];
+		iterStmt = var + "=" + var + "+" + domainVec[i + 2 * count];
+		cntxt.addStmt(
+				"for(" + initStmt + ";" + compStmt + ";" + iterStmt + ")\n");
+		cntxt.addStmt("{\n");
+
 	}
-	cntxt.addStmt("for(" + initStmt + ";" + compStmt + ";" + iterStmt + ")\n");
-	cntxt.addStmt("{\n");
+	Context bodyCntxt = stmtTypeCodeGen(bodyStmt, symTable);
+
 	vector<string> bodyVec = bodyCntxt.getAllStmt();
 	for (int i = 0; i < bodyVec.size(); i++) {
 		cntxt.addStmt(bodyVec[i]);
@@ -354,8 +358,10 @@ Context VCompiler::stmtTypeCodeGen(Statement *stmt, SymTable *symTable) {
 		cntxt = forStmtCodeGen((ForStmt*) stmt, symTable);
 		break;
 	case 4: //parallel for
+		cntxt = pForStmtCodeGen((PforStmt*) stmt, symTable);
 		break;
 	case 5: // list statement
+
 		cntxt = stmtListCodeGen((StmtList*) stmt, symTable);
 		break;
 	case 6: //break statement
@@ -383,6 +389,7 @@ Context VCompiler::stmtTypeCodeGen(Statement *stmt, SymTable *symTable) {
 }
 Context VCompiler::mMultExprCodeGen(MmultExpr* expr, SymTable *symTable) {
 	Context cntxt;
+
 	if (expr->getLhs().get()->getExprType() != Expression::NAME_EXPR) {
 		cout << "LHS not name expression. Cannot generate code" << endl;
 		return cntxt;
@@ -607,9 +614,24 @@ Context VCompiler::negateExprCodeGen(NegateExpr *expr, SymTable *symTable) {
 }
 Context VCompiler::constExprCodeGen(ConstExpr *expr, SymTable *symTable) {
 	Context cntxt;
-	int val = expr->getIntVal();
 	ostringstream convert;
-	convert << val;
+	ScalarType* sc = (ScalarType*) expr->getType().get();
+	convert.str("");
+	int intVal;
+	double floatVal;
+	switch (sc->getScalarTag()) {
+	case ScalarType::SCALAR_INT:
+		intVal = expr->getIntVal();
+		convert << intVal;
+		break;
+	case ScalarType::SCALAR_FLOAT:
+
+		floatVal = expr->getDoubleVal();
+
+		convert << floatVal;
+		break;
+	}
+
 	cntxt.addStmt(convert.str());
 	return cntxt;
 }
@@ -647,6 +669,7 @@ Context VCompiler::domainExprCodeGen(DomainExpr *expr, SymTable *symTable) {
 		}
 	}
 	vec = strtCntxt.getAllStmt();
+
 	for (int i = 0; i < vec.size(); i++) {
 		cntxt.addStmt(vec[i]);
 	}
@@ -670,9 +693,7 @@ Context VCompiler::nameExprCodeGen(NameExpr *expr, SymTable *symTable) {
 
 	string name = symTable->getName(expr->getId());
 	VType* vtype = symTable->getType(expr->getId()).get();
-	if (vtype->getBasicType() == VType::ARRAY_TYPE) {
-		name += "_data";
-	}
+
 	cntxt.addStmt(name);
 	return cntxt;
 }
@@ -830,13 +851,13 @@ Context VCompiler::indexExprCodeGen(IndexExpr *expr, SymTable *symTable) {
 	Expression *nameExpr = expr->getNameExpr().get();
 
 	Context nameCntxt = exprTypeCodeGen(nameExpr, symTable);
-	string name;
+	string name, nameData;
 //if (nameCntxt.getAllStmt().size() > 0) {
 	name = nameCntxt.getAllStmt()[0];
 //	}
-	name += "_data";
-	name = "*(" + name;
-	cout << name;
+	nameData = name + "_data";
+	nameData = "(*(" + nameData;
+
 	ExpressionPtrVector indxPtrVec = expr->getIndices();
 	for (int i = 0; i < indxPtrVec.size(); i++) {
 		Expression *indxExpr = indxPtrVec[i].get();
@@ -850,14 +871,16 @@ Context VCompiler::indexExprCodeGen(IndexExpr *expr, SymTable *symTable) {
 				convert << j;
 				jstr = convert.str();
 				indxStr += "*" + name + "_dim[" + jstr + "]";
+
 			}
-			name += "+" + indxStr;
+			nameData += "+" + indxStr;
 
 			//name += ("[" + indxCntxt.getAllStmt()[0] + "]");
 		}
 	}
-	name += ")";
-	cntxt.addStmt(name);
+	nameData += "))";
+	cntxt.addStmt(nameData);
+
 	return cntxt;
 
 }
@@ -868,8 +891,10 @@ Context VCompiler::refOpStmtCodeGen(RefOpStmt stmt, SymTable *symTable) {
 }
 Context VCompiler::forStmtCodeGen(ForStmt *stmt, SymTable *symTable) {
 	Context cntxt;
+
 	VectorAnalysis analysis;
 	if (getSseFlag()) {
+
 		analysis.analyse((StmtList*) stmt->getBody().get());
 	}
 	StmtPtr sPtr = stmt->getBody();
@@ -877,8 +902,8 @@ Context VCompiler::forStmtCodeGen(ForStmt *stmt, SymTable *symTable) {
 	StmtList * bodyStmt = (StmtList*) sPtr.get();
 
 	ExpressionPtr domainPtr = stmt->getDomain();
+
 	Context domainCntxt = exprTypeCodeGen(domainPtr.get(), symTable);
-	Context bodyCntxt = stmtTypeCodeGen(bodyStmt, symTable);
 
 	string initStmt, compStmt, iterStmt;
 	vector<string> domainVec = domainCntxt.getAllStmt();
@@ -887,6 +912,7 @@ Context VCompiler::forStmtCodeGen(ForStmt *stmt, SymTable *symTable) {
 
 //vectorisation
 	if (getSseFlag()) {
+
 		int size = atoi(domainVec[1].c_str());
 		for (int i = 0; i < bodyStmt->getNumChildren(); i++) {
 			if (analysis.canVectorise(i)) {
@@ -905,24 +931,28 @@ Context VCompiler::forStmtCodeGen(ForStmt *stmt, SymTable *symTable) {
 			return cntxt;
 		}
 	}
+	int count = iterVar.size();
 
-	initStmt = var + "=" + domainVec[0 * 3];
-	compStmt = var + "<" + domainVec[0 * 3 + 1];
-	iterStmt = var + "=" + var + "+" + domainVec[0 * 3 + 2];
-	for (int i = 1; i < iterVar.size();) {
+	for (int i = 0; i < iterVar.size(); i++) {
 		var = symTable->getName(iterVar[i]);
-		initStmt += "," + var + "=" + domainVec[i * 3];
-		compStmt += "," + var + "<" + domainVec[i * 3 + 1];
-		iterStmt += "," + var + "=" + var + "+" + domainVec[i * 3 + 2];
+		initStmt = var + "=" + domainVec[i];
+		compStmt = var + "<" + domainVec[i + count];
+		iterStmt = var + "=" + var + "+" + domainVec[i + 2 * count];
+		cntxt.addStmt(
+				"for(" + initStmt + ";" + compStmt + ";" + iterStmt + ")\n");
+		cntxt.addStmt("{\n");
+
 	}
-	cntxt.addStmt("for(" + initStmt + ";" + compStmt + ";" + iterStmt + ")\n");
-	cntxt.addStmt("{\n");
+
+	Context bodyCntxt = stmtTypeCodeGen(bodyStmt, symTable);
 	vector<string> bodyVec = bodyCntxt.getAllStmt();
 	for (int i = 0; i < bodyVec.size(); i++) {
 		cntxt.addStmt(bodyVec[i]);
 
 	}
-	cntxt.addStmt("}\n");
+	for (int i = 0; i < iterVar.size(); i++) {
+		cntxt.addStmt("}\n");
+	}
 	return cntxt;
 }
 Context VCompiler::assignStmtCodeGen(AssignStmt *stmt, SymTable *symTable) {
@@ -956,7 +986,9 @@ Context VCompiler::assignStmtCodeGen(AssignStmt *stmt, SymTable *symTable) {
 }
 Context VCompiler::stmtListCodeGen(StmtList *stmt, SymTable *symTable) {
 	Context cntxt;
+
 	for (int i = 0; i < stmt->getNumChildren(); i++) {
+
 		Statement *childStmt = stmt->getChild(i).get();
 		Context tempCntxt = stmtTypeCodeGen(childStmt, symTable);
 		for (int i = 0; i < tempCntxt.getAllStmt().size(); i++) {

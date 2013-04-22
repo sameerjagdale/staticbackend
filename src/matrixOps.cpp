@@ -1,7 +1,7 @@
 #include "matrixOps.hpp"
 using namespace std;
-int* matrixMult_int(int* a, int *b, int row1, int column1, int column2) {
-	int *c = new int[row1 * column2];
+long* matrixMult_long(long* a, long *b, int row1, int column1, int column2) {
+	long *c = new long[row1 * column2];
 
 	for (int i = 0; i < row1; i++) {
 		for (int j = 0; j < column2; j++) {
@@ -15,8 +15,8 @@ int* matrixMult_int(int* a, int *b, int row1, int column1, int column2) {
 	return c;
 }
 
-int* matrixSum_int(int *a, int *b, int row, int column) {
-	int *c = new int[row * column];
+long* matrixSum_long(long *a, long *b, int row, int column) {
+	long *c = new long[row * column];
 	for (int i = 0; i < row; i++) {
 		for (int j = 0; j < column; j++) {
 			*(c + i * column + j) = *(a + i * column + j)
@@ -26,9 +26,9 @@ int* matrixSum_int(int *a, int *b, int row, int column) {
 	return c;
 }
 
-float* matrixMult_float(float* a, float *b, int row1, int column1,
+double* matrixMult_double(double* a, double *b, int row1, int column1,
 		int column2) {
-	float *c = new float[row1 * column2];
+	double *c = new double[row1 * column2];
 
 	for (int i = 0; i < row1; i++) {
 		for (int j = 0; j < column2; j++) {
@@ -42,8 +42,8 @@ float* matrixMult_float(float* a, float *b, int row1, int column1,
 	return c;
 }
 
-float* matrixSum_float(float *a, float *b, int row, int column) {
-	float *c = new float[row * column];
+double* matrixSum_double(double *a, double *b, int row, int column) {
+	double *c = new double[row * column];
 	for (int i = 0; i < row; i++) {
 		for (int j = 0; j < column; j++) {
 			*(c + i * column + j) = *(a + i * column + j)
