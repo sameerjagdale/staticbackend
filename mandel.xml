@@ -1,0 +1,1555 @@
+<module name="mandel">
+  <function id="mandelbrot">
+    <vtype name="func">
+      <intypes>
+        <vtype name="int32">
+        </vtype>
+        <vtype name="int32">
+        </vtype>
+        <vtype name="float64">
+        </vtype>
+        <vtype name="float64">
+        </vtype>
+        <vtype name="float64">
+        </vtype>
+        <vtype name="float64">
+        </vtype>
+        <vtype ndims="2" layout="strides" name="array">
+          <vtype name="float64">
+          </vtype>
+        </vtype>
+        <vtype name="int32">
+        </vtype>
+      </intypes>
+      <outtypes>
+        <vtype name="void">
+        </vtype>
+      </outtypes>
+    </vtype>
+    <arglist>
+      <arg restrict="0" id="0">
+      </arg>
+      <arg restrict="0" id="1">
+      </arg>
+      <arg restrict="0" id="2">
+      </arg>
+      <arg restrict="0" id="3">
+      </arg>
+      <arg restrict="0" id="4">
+      </arg>
+      <arg restrict="0" id="5">
+      </arg>
+      <arg restrict="0" id="6">
+      </arg>
+      <arg restrict="0" id="7">
+      </arg>
+    </arglist>
+    <symtable>
+      <sym id="0" name="m">
+        <vtype name="int32">
+        </vtype>
+      </sym>
+      <sym id="1" name="n">
+        <vtype name="int32">
+        </vtype>
+      </sym>
+      <sym id="2" name="xmax">
+        <vtype name="float64">
+        </vtype>
+      </sym>
+      <sym id="3" name="xmin">
+        <vtype name="float64">
+        </vtype>
+      </sym>
+      <sym id="4" name="ymax">
+        <vtype name="float64">
+        </vtype>
+      </sym>
+      <sym id="5" name="ymin">
+        <vtype name="float64">
+        </vtype>
+      </sym>
+      <sym id="6" name="A">
+        <vtype ndims="2" layout="strides" name="array">
+          <vtype name="float64">
+          </vtype>
+        </vtype>
+      </sym>
+      <sym id="7" name="kmax">
+        <vtype name="int32">
+        </vtype>
+      </sym>
+      <sym id="8" name="i">
+        <vtype name="int32">
+        </vtype>
+      </sym>
+      <sym id="9" name="j">
+        <vtype name="int32">
+        </vtype>
+      </sym>
+      <sym id="10" name="cr">
+        <vtype name="float64">
+        </vtype>
+      </sym>
+      <sym id="11" name="ci">
+        <vtype name="float64">
+        </vtype>
+      </sym>
+      <sym id="12" name="zr">
+        <vtype name="float64">
+        </vtype>
+      </sym>
+      <sym id="13" name="zi">
+        <vtype name="float64">
+        </vtype>
+      </sym>
+      <sym id="14" name="k">
+        <vtype name="int32">
+        </vtype>
+      </sym>
+      <sym id="15" name="magnitude">
+        <vtype name="float64">
+        </vtype>
+      </sym>
+      <sym id="16" name="condition">
+        <vtype name="int32">
+        </vtype>
+      </sym>
+      <sym id="17" name="z2r">
+        <vtype name="float64">
+        </vtype>
+      </sym>
+      <sym id="18" name="z2i">
+        <vtype name="float64">
+        </vtype>
+      </sym>
+    </symtable>
+    <body>
+      <stmt name="stmtlist">
+        <stmt name="forstmt">
+          <itervars>
+            <sym id="8">
+            </sym>
+          </itervars>
+          <domain>
+            <expr name="domain">
+              <range>
+                <stop>
+                  <expr name="name" id="1">
+                    <vtype name="int32">
+                    </vtype>
+                  </expr>
+                </stop>
+              </range>
+              <vtype ndims="1" name="domain">
+              </vtype>
+            </expr>
+          </domain>
+          <body>
+            <stmt name="stmtlist">
+              <stmt name="forstmt">
+                <itervars>
+                  <sym id="9">
+                  </sym>
+                </itervars>
+                <domain>
+                  <expr name="domain">
+                    <range>
+                      <stop>
+                        <expr name="name" id="1">
+                          <vtype name="int32">
+                          </vtype>
+                        </expr>
+                      </stop>
+                    </range>
+                    <vtype ndims="1" name="domain">
+                    </vtype>
+                  </expr>
+                </domain>
+                <body>
+                  <stmt name="stmtlist">
+                    <stmt name="assignstmt">
+                      <rhs>
+                        <expr name="plus">
+                          <lhs>
+                            <expr name="name" id="3">
+                              <vtype name="float64">
+                              </vtype>
+                            </expr>
+                          </lhs>
+                          <rhs>
+                            <expr name="div">
+                              <lhs>
+                                <expr name="mult">
+                                  <lhs>
+                                    <expr name="minus">
+                                      <lhs>
+                                        <expr name="name" id="2">
+                                          <vtype name="float64">
+                                          </vtype>
+                                        </expr>
+                                      </lhs>
+                                      <rhs>
+                                        <expr name="name" id="3">
+                                          <vtype name="float64">
+                                          </vtype>
+                                        </expr>
+                                      </rhs>
+                                      <vtype name="float64">
+                                      </vtype>
+                                    </expr>
+                                  </lhs>
+                                  <rhs>
+                                    <expr name="name" id="8">
+                                      <vtype name="int32">
+                                      </vtype>
+                                    </expr>
+                                  </rhs>
+                                  <vtype name="float64">
+                                  </vtype>
+                                </expr>
+                              </lhs>
+                              <rhs>
+                                <expr name="minus">
+                                  <lhs>
+                                    <expr name="name" id="0">
+                                      <vtype name="int32">
+                                      </vtype>
+                                    </expr>
+                                  </lhs>
+                                  <rhs>
+                                    <expr name="const" value="1.0">
+                                      <vtype name="float64">
+                                      </vtype>
+                                    </expr>
+                                  </rhs>
+                                  <vtype name="float64">
+                                  </vtype>
+                                </expr>
+                              </rhs>
+                              <vtype name="float64">
+                              </vtype>
+                            </expr>
+                          </rhs>
+                          <vtype name="float64">
+                          </vtype>
+                        </expr>
+                      </rhs>
+                      <lhs>
+                        <expr name="name" id="10">
+                          <vtype name="float64">
+                          </vtype>
+                        </expr>
+                      </lhs>
+                    </stmt>
+                    <stmt name="assignstmt">
+                      <rhs>
+                        <expr name="plus">
+                          <lhs>
+                            <expr name="name" id="5">
+                              <vtype name="float64">
+                              </vtype>
+                            </expr>
+                          </lhs>
+                          <rhs>
+                            <expr name="div">
+                              <lhs>
+                                <expr name="mult">
+                                  <lhs>
+                                    <expr name="minus">
+                                      <lhs>
+                                        <expr name="name" id="4">
+                                          <vtype name="float64">
+                                          </vtype>
+                                        </expr>
+                                      </lhs>
+                                      <rhs>
+                                        <expr name="name" id="5">
+                                          <vtype name="float64">
+                                          </vtype>
+                                        </expr>
+                                      </rhs>
+                                      <vtype name="float64">
+                                      </vtype>
+                                    </expr>
+                                  </lhs>
+                                  <rhs>
+                                    <expr name="name" id="9">
+                                      <vtype name="int32">
+                                      </vtype>
+                                    </expr>
+                                  </rhs>
+                                  <vtype name="float64">
+                                  </vtype>
+                                </expr>
+                              </lhs>
+                              <rhs>
+                                <expr name="minus">
+                                  <lhs>
+                                    <expr name="name" id="1">
+                                      <vtype name="int32">
+                                      </vtype>
+                                    </expr>
+                                  </lhs>
+                                  <rhs>
+                                    <expr name="const" value="1.0">
+                                      <vtype name="float64">
+                                      </vtype>
+                                    </expr>
+                                  </rhs>
+                                  <vtype name="float64">
+                                  </vtype>
+                                </expr>
+                              </rhs>
+                              <vtype name="float64">
+                              </vtype>
+                            </expr>
+                          </rhs>
+                          <vtype name="float64">
+                          </vtype>
+                        </expr>
+                      </rhs>
+                      <lhs>
+                        <expr name="name" id="11">
+                          <vtype name="float64">
+                          </vtype>
+                        </expr>
+                      </lhs>
+                    </stmt>
+                    <stmt name="assignstmt">
+                      <rhs>
+                        <expr name="const" value="0.0">
+                          <vtype name="float64">
+                          </vtype>
+                        </expr>
+                      </rhs>
+                      <lhs>
+                        <expr name="name" id="12">
+                          <vtype name="float64">
+                          </vtype>
+                        </expr>
+                      </lhs>
+                    </stmt>
+                    <stmt name="assignstmt">
+                      <rhs>
+                        <expr name="const" value="0.0">
+                          <vtype name="float64">
+                          </vtype>
+                        </expr>
+                      </rhs>
+                      <lhs>
+                        <expr name="name" id="13">
+                          <vtype name="float64">
+                          </vtype>
+                        </expr>
+                      </lhs>
+                    </stmt>
+                    <stmt name="assignstmt">
+                      <rhs>
+                        <expr name="const" value="0">
+                          <vtype name="int32">
+                          </vtype>
+                        </expr>
+                      </rhs>
+                      <lhs>
+                        <expr name="name" id="14">
+                          <vtype name="int32">
+                          </vtype>
+                        </expr>
+                      </lhs>
+                    </stmt>
+                    <stmt name="assignstmt">
+                      <rhs>
+                        <expr name="plus">
+                          <lhs>
+                            <expr name="mult">
+                              <lhs>
+                                <expr name="name" id="12">
+                                  <vtype name="float64">
+                                  </vtype>
+                                </expr>
+                              </lhs>
+                              <rhs>
+                                <expr name="name" id="12">
+                                  <vtype name="float64">
+                                  </vtype>
+                                </expr>
+                              </rhs>
+                              <vtype name="float64">
+                              </vtype>
+                            </expr>
+                          </lhs>
+                          <rhs>
+                            <expr name="mult">
+                              <lhs>
+                                <expr name="name" id="13">
+                                  <vtype name="float64">
+                                  </vtype>
+                                </expr>
+                              </lhs>
+                              <rhs>
+                                <expr name="name" id="13">
+                                  <vtype name="float64">
+                                  </vtype>
+                                </expr>
+                              </rhs>
+                              <vtype name="float64">
+                              </vtype>
+                            </expr>
+                          </rhs>
+                          <vtype name="float64">
+                          </vtype>
+                        </expr>
+                      </rhs>
+                      <lhs>
+                        <expr name="name" id="15">
+                          <vtype name="float64">
+                          </vtype>
+                        </expr>
+                      </lhs>
+                    </stmt>
+                    <stmt name="assignstmt">
+                      <rhs>
+                        <expr name="const" value="1">
+                          <vtype name="int32">
+                          </vtype>
+                        </expr>
+                      </rhs>
+                      <lhs>
+                        <expr name="name" id="16">
+                          <vtype name="int32">
+                          </vtype>
+                        </expr>
+                      </lhs>
+                    </stmt>
+                    <stmt name="whilestmt">
+                      <expr name="gt">
+                        <lhs>
+                          <expr name="name" id="16">
+                            <vtype name="int32">
+                            </vtype>
+                          </expr>
+                        </lhs>
+                        <rhs>
+                          <expr name="const" value="0">
+                            <vtype name="int32">
+                            </vtype>
+                          </expr>
+                        </rhs>
+                        <vtype name="bool">
+                        </vtype>
+                      </expr>
+                      <stmt name="stmtlist">
+                        <stmt name="assignstmt">
+                          <rhs>
+                            <expr name="minus">
+                              <lhs>
+                                <expr name="mult">
+                                  <lhs>
+                                    <expr name="name" id="12">
+                                      <vtype name="float64">
+                                      </vtype>
+                                    </expr>
+                                  </lhs>
+                                  <rhs>
+                                    <expr name="name" id="12">
+                                      <vtype name="float64">
+                                      </vtype>
+                                    </expr>
+                                  </rhs>
+                                  <vtype name="float64">
+                                  </vtype>
+                                </expr>
+                              </lhs>
+                              <rhs>
+                                <expr name="mult">
+                                  <lhs>
+                                    <expr name="name" id="13">
+                                      <vtype name="float64">
+                                      </vtype>
+                                    </expr>
+                                  </lhs>
+                                  <rhs>
+                                    <expr name="name" id="13">
+                                      <vtype name="float64">
+                                      </vtype>
+                                    </expr>
+                                  </rhs>
+                                  <vtype name="float64">
+                                  </vtype>
+                                </expr>
+                              </rhs>
+                              <vtype name="float64">
+                              </vtype>
+                            </expr>
+                          </rhs>
+                          <lhs>
+                            <expr name="name" id="17">
+                              <vtype name="float64">
+                              </vtype>
+                            </expr>
+                          </lhs>
+                        </stmt>
+                        <stmt name="assignstmt">
+                          <rhs>
+                            <expr name="mult">
+                              <lhs>
+                                <expr name="mult">
+                                  <lhs>
+                                    <expr name="const" value="2.0">
+                                      <vtype name="float64">
+                                      </vtype>
+                                    </expr>
+                                  </lhs>
+                                  <rhs>
+                                    <expr name="name" id="13">
+                                      <vtype name="float64">
+                                      </vtype>
+                                    </expr>
+                                  </rhs>
+                                  <vtype name="float64">
+                                  </vtype>
+                                </expr>
+                              </lhs>
+                              <rhs>
+                                <expr name="name" id="12">
+                                  <vtype name="float64">
+                                  </vtype>
+                                </expr>
+                              </rhs>
+                              <vtype name="float64">
+                              </vtype>
+                            </expr>
+                          </rhs>
+                          <lhs>
+                            <expr name="name" id="18">
+                              <vtype name="float64">
+                              </vtype>
+                            </expr>
+                          </lhs>
+                        </stmt>
+                        <stmt name="assignstmt">
+                          <rhs>
+                            <expr name="plus">
+                              <lhs>
+                                <expr name="name" id="17">
+                                  <vtype name="float64">
+                                  </vtype>
+                                </expr>
+                              </lhs>
+                              <rhs>
+                                <expr name="name" id="10">
+                                  <vtype name="float64">
+                                  </vtype>
+                                </expr>
+                              </rhs>
+                              <vtype name="float64">
+                              </vtype>
+                            </expr>
+                          </rhs>
+                          <lhs>
+                            <expr name="name" id="12">
+                              <vtype name="float64">
+                              </vtype>
+                            </expr>
+                          </lhs>
+                        </stmt>
+                        <stmt name="assignstmt">
+                          <rhs>
+                            <expr name="plus">
+                              <lhs>
+                                <expr name="name" id="18">
+                                  <vtype name="float64">
+                                  </vtype>
+                                </expr>
+                              </lhs>
+                              <rhs>
+                                <expr name="name" id="11">
+                                  <vtype name="float64">
+                                  </vtype>
+                                </expr>
+                              </rhs>
+                              <vtype name="float64">
+                              </vtype>
+                            </expr>
+                          </rhs>
+                          <lhs>
+                            <expr name="name" id="13">
+                              <vtype name="float64">
+                              </vtype>
+                            </expr>
+                          </lhs>
+                        </stmt>
+                        <stmt name="assignstmt">
+                          <rhs>
+                            <expr name="plus">
+                              <lhs>
+                                <expr name="mult">
+                                  <lhs>
+                                    <expr name="name" id="12">
+                                      <vtype name="float64">
+                                      </vtype>
+                                    </expr>
+                                  </lhs>
+                                  <rhs>
+                                    <expr name="name" id="12">
+                                      <vtype name="float64">
+                                      </vtype>
+                                    </expr>
+                                  </rhs>
+                                  <vtype name="float64">
+                                  </vtype>
+                                </expr>
+                              </lhs>
+                              <rhs>
+                                <expr name="mult">
+                                  <lhs>
+                                    <expr name="name" id="13">
+                                      <vtype name="float64">
+                                      </vtype>
+                                    </expr>
+                                  </lhs>
+                                  <rhs>
+                                    <expr name="name" id="13">
+                                      <vtype name="float64">
+                                      </vtype>
+                                    </expr>
+                                  </rhs>
+                                  <vtype name="float64">
+                                  </vtype>
+                                </expr>
+                              </rhs>
+                              <vtype name="float64">
+                              </vtype>
+                            </expr>
+                          </rhs>
+                          <lhs>
+                            <expr name="name" id="15">
+                              <vtype name="float64">
+                              </vtype>
+                            </expr>
+                          </lhs>
+                        </stmt>
+                        <stmt name="assignstmt">
+                          <rhs>
+                            <expr name="plus">
+                              <lhs>
+                                <expr name="name" id="14">
+                                  <vtype name="int32">
+                                  </vtype>
+                                </expr>
+                              </lhs>
+                              <rhs>
+                                <expr name="const" value="1">
+                                  <vtype name="int32">
+                                  </vtype>
+                                </expr>
+                              </rhs>
+                              <vtype name="int32">
+                              </vtype>
+                            </expr>
+                          </rhs>
+                          <lhs>
+                            <expr name="name" id="14">
+                              <vtype name="int32">
+                              </vtype>
+                            </expr>
+                          </lhs>
+                        </stmt>
+                        <stmt name="ifstmt">
+                          <expr name="gt">
+                            <lhs>
+                              <expr name="name" id="15">
+                                <vtype name="float64">
+                                </vtype>
+                              </expr>
+                            </lhs>
+                            <rhs>
+                              <expr name="const" value="4.0">
+                                <vtype name="float64">
+                                </vtype>
+                              </expr>
+                            </rhs>
+                            <vtype name="bool">
+                            </vtype>
+                          </expr>
+                          <if>
+                            <stmt name="stmtlist">
+                              <stmt name="assignstmt">
+                                <rhs>
+                                  <expr name="const" value="0">
+                                    <vtype name="int32">
+                                    </vtype>
+                                  </expr>
+                                </rhs>
+                                <lhs>
+                                  <expr name="name" id="16">
+                                    <vtype name="int32">
+                                    </vtype>
+                                  </expr>
+                                </lhs>
+                              </stmt>
+                            </stmt>
+                          </if>
+                          <else>
+                            <stmt name="stmtlist">
+                            </stmt>
+                          </else>
+                        </stmt>
+                        <stmt name="ifstmt">
+                          <expr name="gt">
+                            <lhs>
+                              <expr name="name" id="14">
+                                <vtype name="int32">
+                                </vtype>
+                              </expr>
+                            </lhs>
+                            <rhs>
+                              <expr name="name" id="7">
+                                <vtype name="int32">
+                                </vtype>
+                              </expr>
+                            </rhs>
+                            <vtype name="bool">
+                            </vtype>
+                          </expr>
+                          <if>
+                            <stmt name="stmtlist">
+                              <stmt name="assignstmt">
+                                <rhs>
+                                  <expr name="const" value="0">
+                                    <vtype name="int32">
+                                    </vtype>
+                                  </expr>
+                                </rhs>
+                                <lhs>
+                                  <expr name="name" id="16">
+                                    <vtype name="int32">
+                                    </vtype>
+                                  </expr>
+                                </lhs>
+                              </stmt>
+                            </stmt>
+                          </if>
+                          <else>
+                            <stmt name="stmtlist">
+                            </stmt>
+                          </else>
+                        </stmt>
+                      </stmt>
+                    </stmt>
+                    <stmt name="assignstmt">
+                      <rhs>
+                        <expr name="name" id="15">
+                          <vtype name="float64">
+                          </vtype>
+                        </expr>
+                      </rhs>
+                      <lhs>
+                        <expr boundscheck="1" name="index" negative="1">
+                          <aname>
+                            <expr name="name" id="6">
+                              <vtype ndims="2" layout="strides" name="array">
+                                <vtype name="float64">
+                                </vtype>
+                              </vtype>
+                            </expr>
+                          </aname>
+                          <indices>
+                            <expr name="name" id="8">
+                              <vtype name="int32">
+                              </vtype>
+                            </expr>
+                            <expr name="name" id="9">
+                              <vtype name="int32">
+                              </vtype>
+                            </expr>
+                          </indices>
+                          <vtype name="float64">
+                          </vtype>
+                        </expr>
+                      </lhs>
+                    </stmt>
+                  </stmt>
+                </body>
+              </stmt>
+            </stmt>
+          </body>
+        </stmt>
+        <stmt name="returnstmt">
+        </stmt>
+      </stmt>
+    </body>
+  </function>
+  <function id="mandelbrotp">
+    <vtype name="func">
+      <intypes>
+        <vtype name="int32">
+        </vtype>
+        <vtype name="int32">
+        </vtype>
+        <vtype name="float64">
+        </vtype>
+        <vtype name="float64">
+        </vtype>
+        <vtype name="float64">
+        </vtype>
+        <vtype name="float64">
+        </vtype>
+        <vtype ndims="2" layout="strides" name="array">
+          <vtype name="float64">
+          </vtype>
+        </vtype>
+        <vtype name="int32">
+        </vtype>
+      </intypes>
+      <outtypes>
+        <vtype name="void">
+        </vtype>
+      </outtypes>
+    </vtype>
+    <arglist>
+      <arg restrict="0" id="0">
+      </arg>
+      <arg restrict="0" id="1">
+      </arg>
+      <arg restrict="0" id="2">
+      </arg>
+      <arg restrict="0" id="3">
+      </arg>
+      <arg restrict="0" id="4">
+      </arg>
+      <arg restrict="0" id="5">
+      </arg>
+      <arg restrict="0" id="6">
+      </arg>
+      <arg restrict="0" id="7">
+      </arg>
+    </arglist>
+    <symtable>
+      <sym id="0" name="m">
+        <vtype name="int32">
+        </vtype>
+      </sym>
+      <sym id="1" name="n">
+        <vtype name="int32">
+        </vtype>
+      </sym>
+      <sym id="2" name="xmax">
+        <vtype name="float64">
+        </vtype>
+      </sym>
+      <sym id="3" name="xmin">
+        <vtype name="float64">
+        </vtype>
+      </sym>
+      <sym id="4" name="ymax">
+        <vtype name="float64">
+        </vtype>
+      </sym>
+      <sym id="5" name="ymin">
+        <vtype name="float64">
+        </vtype>
+      </sym>
+      <sym id="6" name="A">
+        <vtype ndims="2" layout="strides" name="array">
+          <vtype name="float64">
+          </vtype>
+        </vtype>
+      </sym>
+      <sym id="7" name="kmax">
+        <vtype name="int32">
+        </vtype>
+      </sym>
+      <sym id="8" name="i">
+        <vtype name="int32">
+        </vtype>
+      </sym>
+      <sym id="9" name="j">
+        <vtype name="int32">
+        </vtype>
+      </sym>
+      <sym id="10" name="cr">
+        <vtype name="float64">
+        </vtype>
+      </sym>
+      <sym id="11" name="ci">
+        <vtype name="float64">
+        </vtype>
+      </sym>
+      <sym id="12" name="zr">
+        <vtype name="float64">
+        </vtype>
+      </sym>
+      <sym id="13" name="zi">
+        <vtype name="float64">
+        </vtype>
+      </sym>
+      <sym id="14" name="k">
+        <vtype name="int32">
+        </vtype>
+      </sym>
+      <sym id="15" name="magnitude">
+        <vtype name="float64">
+        </vtype>
+      </sym>
+      <sym id="16" name="condition">
+        <vtype name="int32">
+        </vtype>
+      </sym>
+      <sym id="17" name="z2r">
+        <vtype name="float64">
+        </vtype>
+      </sym>
+      <sym id="18" name="z2i">
+        <vtype name="float64">
+        </vtype>
+      </sym>
+    </symtable>
+    <body>
+      <stmt name="stmtlist">
+        <stmt name="pforstmt">
+          <itervars>
+            <sym id="8">
+            </sym>
+            <sym id="9">
+            </sym>
+          </itervars>
+          <domain>
+            <expr name="domain">
+              <range>
+                <stop>
+                  <expr name="name" id="1">
+                    <vtype name="int32">
+                    </vtype>
+                  </expr>
+                </stop>
+              </range>
+              <range>
+                <stop>
+                  <expr name="name" id="1">
+                    <vtype name="int32">
+                    </vtype>
+                  </expr>
+                </stop>
+              </range>
+              <vtype ndims="2" name="domain">
+              </vtype>
+              <vtype ndims="2" name="domain">
+              </vtype>
+            </expr>
+          </domain>
+          <body>
+            <stmt name="stmtlist">
+              <stmt name="assignstmt">
+                <rhs>
+                  <expr name="plus">
+                    <lhs>
+                      <expr name="name" id="3">
+                        <vtype name="float64">
+                        </vtype>
+                      </expr>
+                    </lhs>
+                    <rhs>
+                      <expr name="div">
+                        <lhs>
+                          <expr name="mult">
+                            <lhs>
+                              <expr name="minus">
+                                <lhs>
+                                  <expr name="name" id="2">
+                                    <vtype name="float64">
+                                    </vtype>
+                                  </expr>
+                                </lhs>
+                                <rhs>
+                                  <expr name="name" id="3">
+                                    <vtype name="float64">
+                                    </vtype>
+                                  </expr>
+                                </rhs>
+                                <vtype name="float64">
+                                </vtype>
+                              </expr>
+                            </lhs>
+                            <rhs>
+                              <expr name="name" id="8">
+                                <vtype name="int32">
+                                </vtype>
+                              </expr>
+                            </rhs>
+                            <vtype name="float64">
+                            </vtype>
+                          </expr>
+                        </lhs>
+                        <rhs>
+                          <expr name="minus">
+                            <lhs>
+                              <expr name="name" id="0">
+                                <vtype name="int32">
+                                </vtype>
+                              </expr>
+                            </lhs>
+                            <rhs>
+                              <expr name="const" value="1.0">
+                                <vtype name="float64">
+                                </vtype>
+                              </expr>
+                            </rhs>
+                            <vtype name="float64">
+                            </vtype>
+                          </expr>
+                        </rhs>
+                        <vtype name="float64">
+                        </vtype>
+                      </expr>
+                    </rhs>
+                    <vtype name="float64">
+                    </vtype>
+                  </expr>
+                </rhs>
+                <lhs>
+                  <expr name="name" id="10">
+                    <vtype name="float64">
+                    </vtype>
+                  </expr>
+                </lhs>
+              </stmt>
+              <stmt name="assignstmt">
+                <rhs>
+                  <expr name="plus">
+                    <lhs>
+                      <expr name="name" id="5">
+                        <vtype name="float64">
+                        </vtype>
+                      </expr>
+                    </lhs>
+                    <rhs>
+                      <expr name="div">
+                        <lhs>
+                          <expr name="mult">
+                            <lhs>
+                              <expr name="minus">
+                                <lhs>
+                                  <expr name="name" id="4">
+                                    <vtype name="float64">
+                                    </vtype>
+                                  </expr>
+                                </lhs>
+                                <rhs>
+                                  <expr name="name" id="5">
+                                    <vtype name="float64">
+                                    </vtype>
+                                  </expr>
+                                </rhs>
+                                <vtype name="float64">
+                                </vtype>
+                              </expr>
+                            </lhs>
+                            <rhs>
+                              <expr name="name" id="9">
+                                <vtype name="int32">
+                                </vtype>
+                              </expr>
+                            </rhs>
+                            <vtype name="float64">
+                            </vtype>
+                          </expr>
+                        </lhs>
+                        <rhs>
+                          <expr name="minus">
+                            <lhs>
+                              <expr name="name" id="1">
+                                <vtype name="int32">
+                                </vtype>
+                              </expr>
+                            </lhs>
+                            <rhs>
+                              <expr name="const" value="1.0">
+                                <vtype name="float64">
+                                </vtype>
+                              </expr>
+                            </rhs>
+                            <vtype name="float64">
+                            </vtype>
+                          </expr>
+                        </rhs>
+                        <vtype name="float64">
+                        </vtype>
+                      </expr>
+                    </rhs>
+                    <vtype name="float64">
+                    </vtype>
+                  </expr>
+                </rhs>
+                <lhs>
+                  <expr name="name" id="11">
+                    <vtype name="float64">
+                    </vtype>
+                  </expr>
+                </lhs>
+              </stmt>
+              <stmt name="assignstmt">
+                <rhs>
+                  <expr name="const" value="0.0">
+                    <vtype name="float64">
+                    </vtype>
+                  </expr>
+                </rhs>
+                <lhs>
+                  <expr name="name" id="12">
+                    <vtype name="float64">
+                    </vtype>
+                  </expr>
+                </lhs>
+              </stmt>
+              <stmt name="assignstmt">
+                <rhs>
+                  <expr name="const" value="0.0">
+                    <vtype name="float64">
+                    </vtype>
+                  </expr>
+                </rhs>
+                <lhs>
+                  <expr name="name" id="13">
+                    <vtype name="float64">
+                    </vtype>
+                  </expr>
+                </lhs>
+              </stmt>
+              <stmt name="assignstmt">
+                <rhs>
+                  <expr name="const" value="0">
+                    <vtype name="int32">
+                    </vtype>
+                  </expr>
+                </rhs>
+                <lhs>
+                  <expr name="name" id="14">
+                    <vtype name="int32">
+                    </vtype>
+                  </expr>
+                </lhs>
+              </stmt>
+              <stmt name="assignstmt">
+                <rhs>
+                  <expr name="plus">
+                    <lhs>
+                      <expr name="mult">
+                        <lhs>
+                          <expr name="name" id="12">
+                            <vtype name="float64">
+                            </vtype>
+                          </expr>
+                        </lhs>
+                        <rhs>
+                          <expr name="name" id="12">
+                            <vtype name="float64">
+                            </vtype>
+                          </expr>
+                        </rhs>
+                        <vtype name="float64">
+                        </vtype>
+                      </expr>
+                    </lhs>
+                    <rhs>
+                      <expr name="mult">
+                        <lhs>
+                          <expr name="name" id="13">
+                            <vtype name="float64">
+                            </vtype>
+                          </expr>
+                        </lhs>
+                        <rhs>
+                          <expr name="name" id="13">
+                            <vtype name="float64">
+                            </vtype>
+                          </expr>
+                        </rhs>
+                        <vtype name="float64">
+                        </vtype>
+                      </expr>
+                    </rhs>
+                    <vtype name="float64">
+                    </vtype>
+                  </expr>
+                </rhs>
+                <lhs>
+                  <expr name="name" id="15">
+                    <vtype name="float64">
+                    </vtype>
+                  </expr>
+                </lhs>
+              </stmt>
+              <stmt name="assignstmt">
+                <rhs>
+                  <expr name="const" value="1">
+                    <vtype name="int32">
+                    </vtype>
+                  </expr>
+                </rhs>
+                <lhs>
+                  <expr name="name" id="16">
+                    <vtype name="int32">
+                    </vtype>
+                  </expr>
+                </lhs>
+              </stmt>
+              <stmt name="whilestmt">
+                <expr name="gt">
+                  <lhs>
+                    <expr name="name" id="16">
+                      <vtype name="int32">
+                      </vtype>
+                    </expr>
+                  </lhs>
+                  <rhs>
+                    <expr name="const" value="0">
+                      <vtype name="int32">
+                      </vtype>
+                    </expr>
+                  </rhs>
+                  <vtype name="bool">
+                  </vtype>
+                </expr>
+                <stmt name="stmtlist">
+                  <stmt name="assignstmt">
+                    <rhs>
+                      <expr name="minus">
+                        <lhs>
+                          <expr name="mult">
+                            <lhs>
+                              <expr name="name" id="12">
+                                <vtype name="float64">
+                                </vtype>
+                              </expr>
+                            </lhs>
+                            <rhs>
+                              <expr name="name" id="12">
+                                <vtype name="float64">
+                                </vtype>
+                              </expr>
+                            </rhs>
+                            <vtype name="float64">
+                            </vtype>
+                          </expr>
+                        </lhs>
+                        <rhs>
+                          <expr name="mult">
+                            <lhs>
+                              <expr name="name" id="13">
+                                <vtype name="float64">
+                                </vtype>
+                              </expr>
+                            </lhs>
+                            <rhs>
+                              <expr name="name" id="13">
+                                <vtype name="float64">
+                                </vtype>
+                              </expr>
+                            </rhs>
+                            <vtype name="float64">
+                            </vtype>
+                          </expr>
+                        </rhs>
+                        <vtype name="float64">
+                        </vtype>
+                      </expr>
+                    </rhs>
+                    <lhs>
+                      <expr name="name" id="17">
+                        <vtype name="float64">
+                        </vtype>
+                      </expr>
+                    </lhs>
+                  </stmt>
+                  <stmt name="assignstmt">
+                    <rhs>
+                      <expr name="mult">
+                        <lhs>
+                          <expr name="mult">
+                            <lhs>
+                              <expr name="const" value="2.0">
+                                <vtype name="float64">
+                                </vtype>
+                              </expr>
+                            </lhs>
+                            <rhs>
+                              <expr name="name" id="13">
+                                <vtype name="float64">
+                                </vtype>
+                              </expr>
+                            </rhs>
+                            <vtype name="float64">
+                            </vtype>
+                          </expr>
+                        </lhs>
+                        <rhs>
+                          <expr name="name" id="12">
+                            <vtype name="float64">
+                            </vtype>
+                          </expr>
+                        </rhs>
+                        <vtype name="float64">
+                        </vtype>
+                      </expr>
+                    </rhs>
+                    <lhs>
+                      <expr name="name" id="18">
+                        <vtype name="float64">
+                        </vtype>
+                      </expr>
+                    </lhs>
+                  </stmt>
+                  <stmt name="assignstmt">
+                    <rhs>
+                      <expr name="plus">
+                        <lhs>
+                          <expr name="name" id="17">
+                            <vtype name="float64">
+                            </vtype>
+                          </expr>
+                        </lhs>
+                        <rhs>
+                          <expr name="name" id="10">
+                            <vtype name="float64">
+                            </vtype>
+                          </expr>
+                        </rhs>
+                        <vtype name="float64">
+                        </vtype>
+                      </expr>
+                    </rhs>
+                    <lhs>
+                      <expr name="name" id="12">
+                        <vtype name="float64">
+                        </vtype>
+                      </expr>
+                    </lhs>
+                  </stmt>
+                  <stmt name="assignstmt">
+                    <rhs>
+                      <expr name="plus">
+                        <lhs>
+                          <expr name="name" id="18">
+                            <vtype name="float64">
+                            </vtype>
+                          </expr>
+                        </lhs>
+                        <rhs>
+                          <expr name="name" id="11">
+                            <vtype name="float64">
+                            </vtype>
+                          </expr>
+                        </rhs>
+                        <vtype name="float64">
+                        </vtype>
+                      </expr>
+                    </rhs>
+                    <lhs>
+                      <expr name="name" id="13">
+                        <vtype name="float64">
+                        </vtype>
+                      </expr>
+                    </lhs>
+                  </stmt>
+                  <stmt name="assignstmt">
+                    <rhs>
+                      <expr name="plus">
+                        <lhs>
+                          <expr name="mult">
+                            <lhs>
+                              <expr name="name" id="12">
+                                <vtype name="float64">
+                                </vtype>
+                              </expr>
+                            </lhs>
+                            <rhs>
+                              <expr name="name" id="12">
+                                <vtype name="float64">
+                                </vtype>
+                              </expr>
+                            </rhs>
+                            <vtype name="float64">
+                            </vtype>
+                          </expr>
+                        </lhs>
+                        <rhs>
+                          <expr name="mult">
+                            <lhs>
+                              <expr name="name" id="13">
+                                <vtype name="float64">
+                                </vtype>
+                              </expr>
+                            </lhs>
+                            <rhs>
+                              <expr name="name" id="13">
+                                <vtype name="float64">
+                                </vtype>
+                              </expr>
+                            </rhs>
+                            <vtype name="float64">
+                            </vtype>
+                          </expr>
+                        </rhs>
+                        <vtype name="float64">
+                        </vtype>
+                      </expr>
+                    </rhs>
+                    <lhs>
+                      <expr name="name" id="15">
+                        <vtype name="float64">
+                        </vtype>
+                      </expr>
+                    </lhs>
+                  </stmt>
+                  <stmt name="assignstmt">
+                    <rhs>
+                      <expr name="plus">
+                        <lhs>
+                          <expr name="name" id="14">
+                            <vtype name="int32">
+                            </vtype>
+                          </expr>
+                        </lhs>
+                        <rhs>
+                          <expr name="const" value="1">
+                            <vtype name="int32">
+                            </vtype>
+                          </expr>
+                        </rhs>
+                        <vtype name="int32">
+                        </vtype>
+                      </expr>
+                    </rhs>
+                    <lhs>
+                      <expr name="name" id="14">
+                        <vtype name="int32">
+                        </vtype>
+                      </expr>
+                    </lhs>
+                  </stmt>
+                  <stmt name="ifstmt">
+                    <expr name="gt">
+                      <lhs>
+                        <expr name="name" id="15">
+                          <vtype name="float64">
+                          </vtype>
+                        </expr>
+                      </lhs>
+                      <rhs>
+                        <expr name="const" value="4.0">
+                          <vtype name="float64">
+                          </vtype>
+                        </expr>
+                      </rhs>
+                      <vtype name="bool">
+                      </vtype>
+                    </expr>
+                    <if>
+                      <stmt name="stmtlist">
+                        <stmt name="assignstmt">
+                          <rhs>
+                            <expr name="const" value="0">
+                              <vtype name="int32">
+                              </vtype>
+                            </expr>
+                          </rhs>
+                          <lhs>
+                            <expr name="name" id="16">
+                              <vtype name="int32">
+                              </vtype>
+                            </expr>
+                          </lhs>
+                        </stmt>
+                      </stmt>
+                    </if>
+                    <else>
+                      <stmt name="stmtlist">
+                      </stmt>
+                    </else>
+                  </stmt>
+                  <stmt name="ifstmt">
+                    <expr name="gt">
+                      <lhs>
+                        <expr name="name" id="14">
+                          <vtype name="int32">
+                          </vtype>
+                        </expr>
+                      </lhs>
+                      <rhs>
+                        <expr name="name" id="7">
+                          <vtype name="int32">
+                          </vtype>
+                        </expr>
+                      </rhs>
+                      <vtype name="bool">
+                      </vtype>
+                    </expr>
+                    <if>
+                      <stmt name="stmtlist">
+                        <stmt name="assignstmt">
+                          <rhs>
+                            <expr name="const" value="0">
+                              <vtype name="int32">
+                              </vtype>
+                            </expr>
+                          </rhs>
+                          <lhs>
+                            <expr name="name" id="16">
+                              <vtype name="int32">
+                              </vtype>
+                            </expr>
+                          </lhs>
+                        </stmt>
+                      </stmt>
+                    </if>
+                    <else>
+                      <stmt name="stmtlist">
+                      </stmt>
+                    </else>
+                  </stmt>
+                </stmt>
+              </stmt>
+              <stmt name="assignstmt">
+                <rhs>
+                  <expr name="name" id="15">
+                    <vtype name="float64">
+                    </vtype>
+                  </expr>
+                </rhs>
+                <lhs>
+                  <expr boundscheck="1" name="index" negative="1">
+                    <aname>
+                      <expr name="name" id="6">
+                        <vtype ndims="2" layout="strides" name="array">
+                          <vtype name="float64">
+                          </vtype>
+                        </vtype>
+                      </expr>
+                    </aname>
+                    <indices>
+                      <expr name="name" id="8">
+                        <vtype name="int32">
+                        </vtype>
+                      </expr>
+                      <expr name="name" id="9">
+                        <vtype name="int32">
+                        </vtype>
+                      </expr>
+                    </indices>
+                    <vtype name="float64">
+                    </vtype>
+                  </expr>
+                </lhs>
+              </stmt>
+            </stmt>
+          </body>
+        </stmt>
+        <stmt name="returnstmt">
+        </stmt>
+      </stmt>
+    </body>
+  </function>
+</module>
+
