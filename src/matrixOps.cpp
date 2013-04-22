@@ -1,5 +1,5 @@
-#include <iostream>
-
+#include "matrixOps.hpp"
+using namespace std;
 int* matrixMult_int(int* a, int *b, int row1, int column1, int column2) {
 	int *c = new int[row1 * column2];
 

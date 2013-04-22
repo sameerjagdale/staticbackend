@@ -613,6 +613,10 @@ Context VCompiler::nameExprCodeGen(NameExpr *expr, SymTable *symTable) {
 //	VType *vtype = vptr.get();
 
 	string name = symTable->getName(expr->getId());
+	VType* vtype = symTable->getType(expr->getId()).get();
+	if (vtype->getBasicType() == VType::ARRAY_TYPE) {
+		name += "_data";
+	}
 	cntxt.addStmt(name);
 	return cntxt;
 }
