@@ -69,6 +69,7 @@ Context VCompiler::moduleCodeGen(VModule *vm) {
 	Context cntxt;
 	cntxt.addStmt("#include<math.h> \n");
 	cntxt.addStmt("#include<matrixOps.hpp>\n");
+	cntxt.addStmt("#include<sse.hpp>\n");
 	vector<VFunction*> funcList = vm->m_funcs;
 	for (int i = 0; i < funcList.size(); i++) {
 
@@ -228,10 +229,10 @@ Context VCompiler::stmtCodeGen(Statement *stmt, SymTable *symTable) {
 
 Context VCompiler::pForStmtCodeGen(PforStmt *stmt, SymTable *symTable) {
 	Context cntxt;
-	cout << "entered parallel for" << endl;
+
 	cout << getOpenmpFlag() << endl;
 	if (getOpenmpFlag()) {
-		cout << "entered openmp if block" << endl;
+
 		vector<int> privateVec = stmt->getPrivateVars();
 
 		string ompStr = "#pragma omp parallel for";
@@ -898,12 +899,9 @@ Context VCompiler::refOpStmtCodeGen(RefOpStmt stmt, SymTable *symTable) {
 }
 Context VCompiler::forStmtCodeGen(ForStmt *stmt, SymTable *symTable) {
 	Context cntxt;
-
+	bool vectorise = true;
 	VectorAnalysis analysis;
-	if (getSseFlag()) {
 
-		analysis.analyse((StmtList*) stmt->getBody().get());
-	}
 	StmtPtr sPtr = stmt->getBody();
 
 	StmtList * bodyStmt = (StmtList*) sPtr.get();
@@ -915,15 +913,23 @@ Context VCompiler::forStmtCodeGen(ForStmt *stmt, SymTable *symTable) {
 	string initStmt, compStmt, iterStmt;
 	vector<string> domainVec = domainCntxt.getAllStmt();
 	vector<int> iterVar = stmt->getIterVars();
+	if (iterVar.size() > 1) {
+		vectorise = false;
+	}
+	if (getSseFlag() && vectorise) {
+
+		analysis.analyse((StmtList*) stmt->getBody().get());
+	}
 	string var = symTable->getName(iterVar[0]);
 
 //vectorisation
-	if (getSseFlag()) {
+	if (getSseFlag() && vectorise) {
+		bool flag = true;
 
-		int size = atoi(domainVec[1].c_str());
+		string size = domainVec[iterVar.size()];
 		for (int i = 0; i < bodyStmt->getNumChildren(); i++) {
 			if (analysis.canVectorise(i)) {
-				cout << "statement " << i << " can be vectorized" << endl;
+
 				Context tempCntxt = vectoriseStmt(
 						(AssignStmt*) bodyStmt->getChild(i).get(), size,
 						symTable);
@@ -932,9 +938,11 @@ Context VCompiler::forStmtCodeGen(ForStmt *stmt, SymTable *symTable) {
 					cntxt.addStmt(tempCntxt.getAllStmt()[i]);
 				}
 
+			} else {
+				flag = false;
 			}
 		}
-		if (analysis.skipFor()) {
+		if (flag) {
 			return cntxt;
 		}
 	}
@@ -1005,7 +1013,7 @@ Context VCompiler::stmtListCodeGen(StmtList *stmt, SymTable *symTable) {
 	return cntxt;
 }
 
-Context VCompiler::vectoriseStmt(AssignStmt *stmt, int size,
+Context VCompiler::vectoriseStmt(AssignStmt *stmt, string size,
 		SymTable *symTable) {
 	Context cntxt;
 	IndexExpr *lhs = (IndexExpr*) stmt->getLhs()[0].get();
@@ -1015,25 +1023,26 @@ Context VCompiler::vectoriseStmt(AssignStmt *stmt, int size,
 	IndexExpr *rExpr = (IndexExpr*) rhsExpr->getRhs().get();
 	string rl = symTable->getName(lExpr->getArrayId());
 	string rr = symTable->getName(rExpr->getArrayId());
-	ostringstream ss;
-	ss << size;
+	//ostringstream ss;
+	//ss << size;
 
 	switch (rhsExpr->getExprType()) {
 	case Expression::PLUS_EXPR:
 		cntxt.addStmt(
-				"sse_add(" + rl + "," + rr + "," + l + "," + ss.str() + ");");
+				"sse_add(" + rl + "_data," + rr + "_data," + l + "_data," + size
+						+ ");\n");
 		break;
 	case Expression::MINUS_EXPR:
 		cntxt.addStmt(
-				"sse_sub(" + rl + "," + rr + "," + l + "," + ss.str() + ");");
+				"sse_sub(" + rl + "," + rr + "," + l + "," + size + ");\n");
 		break;
 	case Expression::MULT_EXPR:
 		cntxt.addStmt(
-				"sse_mul(" + rl + "," + rr + "," + l + "," + ss.str() + ");");
+				"sse_mul(" + rl + "," + rr + "," + l + "," + size + ");\n");
 		break;
 	case Expression::DIV_EXPR:
 		cntxt.addStmt(
-				"sse_div(" + rl + "," + rr + "," + l + "," + ss.str() + ");");
+				"sse_div(" + rl + "," + rr + "," + l + "," + size + ");\n");
 		break;
 	}
 	return cntxt;

@@ -3,6 +3,7 @@
 
 void VectorAnalysis::analyse(StmtList *stmt) {
 	bool val;
+
 	for (int i = 0; i < stmt->getNumChildren(); i++) {
 		if (invalidLoop) {
 			break;
@@ -25,6 +26,7 @@ void VectorAnalysis::analyse(StmtList *stmt) {
 }
 
 bool VectorAnalysis::assignStmtVectorAnalysis(AssignStmt*stmt, int stmtNo) {
+
 	if (stmt->getLhs().size() > 1) {
 		return false;
 	}
@@ -34,6 +36,7 @@ bool VectorAnalysis::assignStmtVectorAnalysis(AssignStmt*stmt, int stmtNo) {
 	if (stmt->getRhs().get()->isBinaryExpr() == false) {
 		return false;
 	}
+
 	return indexExprVectorAnalysis((IndexExpr*) stmt->getLhs()[0].get(), stmtNo)
 			&& binaryExprVectorAnalysis((BinaryExpr*) stmt->getRhs().get(),
 					stmtNo);
@@ -64,7 +67,8 @@ bool VectorAnalysis::indexExprVectorAnalysis(IndexExpr*expr, int stmtNo) {
 		arrayMap.insert(std::pair<int, bool>(expr->getArrayId(), true));
 		return false;
 	}
-	ArrayType *type = (ArrayType*) expr->getType().get();
+
+	ArrayType *type = (ArrayType*) expr->getNameExpr().get()->getType().get();
 	if (type->getElementType().get()->getScalarTag()
 			!= ScalarType::SCALAR_FLOAT) {
 		arrayMap.insert(std::pair<int, bool>(expr->getArrayId(), true));

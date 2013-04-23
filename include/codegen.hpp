@@ -85,7 +85,7 @@ public:
 	Context funCallExprCodeGen(FuncallExpr *expr, SymTable *symTable);
 	Context libCallExprCodeGen(LibCallExpr *expr, SymTable *symtable);
 	Context negateExprCodeGen(NegateExpr *expr, SymTable *symTable);
-	Context vectoriseStmt(AssignStmt* stmt, int size, SymTable *symTable);
+	Context vectoriseStmt(AssignStmt* stmt, string size, SymTable *symTable);
 };
 
 }
