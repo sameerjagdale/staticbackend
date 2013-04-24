@@ -271,5 +271,283 @@
       </stmt>
     </body>
   </function>
+  <function id="mmulp">
+    <vtype name="func">
+      <intypes>
+        <vtype ndims="2" layout="strides" name="array">
+          <vtype name="float64">
+          </vtype>
+        </vtype>
+        <vtype ndims="2" layout="strides" name="array">
+          <vtype name="float64">
+          </vtype>
+        </vtype>
+        <vtype ndims="2" layout="strides" name="array">
+          <vtype name="float64">
+          </vtype>
+        </vtype>
+        <vtype name="int32">
+        </vtype>
+        <vtype name="int32">
+        </vtype>
+        <vtype name="int32">
+        </vtype>
+      </intypes>
+      <outtypes>
+        <vtype name="void">
+        </vtype>
+      </outtypes>
+    </vtype>
+    <arglist>
+      <arg restrict="0" id="0">
+      </arg>
+      <arg restrict="0" id="1">
+      </arg>
+      <arg restrict="0" id="2">
+      </arg>
+      <arg restrict="0" id="3">
+      </arg>
+      <arg restrict="0" id="4">
+      </arg>
+      <arg restrict="0" id="5">
+      </arg>
+    </arglist>
+    <symtable>
+      <sym id="0" name="a">
+        <vtype ndims="2" layout="strides" name="array">
+          <vtype name="float64">
+          </vtype>
+        </vtype>
+      </sym>
+      <sym id="1" name="b">
+        <vtype ndims="2" layout="strides" name="array">
+          <vtype name="float64">
+          </vtype>
+        </vtype>
+      </sym>
+      <sym id="2" name="c">
+        <vtype ndims="2" layout="strides" name="array">
+          <vtype name="float64">
+          </vtype>
+        </vtype>
+      </sym>
+      <sym id="3" name="M">
+        <vtype name="int32">
+        </vtype>
+      </sym>
+      <sym id="4" name="N">
+        <vtype name="int32">
+        </vtype>
+      </sym>
+      <sym id="5" name="K">
+        <vtype name="int32">
+        </vtype>
+      </sym>
+      <sym id="6" name="i">
+        <vtype name="int32">
+        </vtype>
+      </sym>
+      <sym id="7" name="j">
+        <vtype name="int32">
+        </vtype>
+      </sym>
+      <sym id="8" name="s">
+        <vtype name="float64">
+        </vtype>
+      </sym>
+      <sym id="9" name="k">
+        <vtype name="int32">
+        </vtype>
+      </sym>
+    </symtable>
+    <body>
+      <stmt name="stmtlist">
+        <stmt name="pforstmt">
+          <privates>
+            <sym id="8">
+            </sym>
+          </privates>
+          <itervars>
+            <sym id="6">
+            </sym>
+            <sym id="7">
+            </sym>
+          </itervars>
+          <domain>
+            <expr name="domain">
+              <range>
+                <stop>
+                  <expr name="name" id="3">
+                    <vtype name="int32">
+                    </vtype>
+                  </expr>
+                </stop>
+              </range>
+              <range>
+                <stop>
+                  <expr name="name" id="4">
+                    <vtype name="int32">
+                    </vtype>
+                  </expr>
+                </stop>
+              </range>
+              <vtype ndims="2" name="domain">
+              </vtype>
+              <vtype ndims="2" name="domain">
+              </vtype>
+            </expr>
+          </domain>
+          <body>
+            <stmt name="stmtlist">
+              <stmt name="assignstmt">
+                <rhs>
+                  <expr name="const" value="0.0">
+                    <vtype name="float64">
+                    </vtype>
+                  </expr>
+                </rhs>
+                <lhs>
+                  <expr name="name" id="8">
+                    <vtype name="float64">
+                    </vtype>
+                  </expr>
+                </lhs>
+              </stmt>
+              <stmt name="forstmt">
+                <itervars>
+                  <sym id="9">
+                  </sym>
+                </itervars>
+                <domain>
+                  <expr name="domain">
+                    <range>
+                      <stop>
+                        <expr name="name" id="5">
+                          <vtype name="int32">
+                          </vtype>
+                        </expr>
+                      </stop>
+                    </range>
+                    <vtype ndims="1" name="domain">
+                    </vtype>
+                  </expr>
+                </domain>
+                <body>
+                  <stmt name="stmtlist">
+                    <stmt name="assignstmt">
+                      <rhs>
+                        <expr name="plus">
+                          <lhs>
+                            <expr name="name" id="8">
+                              <vtype name="float64">
+                              </vtype>
+                            </expr>
+                          </lhs>
+                          <rhs>
+                            <expr name="mult">
+                              <lhs>
+                                <expr boundscheck="1" name="index" negative="1">
+                                  <aname>
+                                    <expr name="name" id="0">
+                                      <vtype ndims="2" layout="strides" name="array">
+                                        <vtype name="float64">
+                                        </vtype>
+                                      </vtype>
+                                    </expr>
+                                  </aname>
+                                  <indices>
+                                    <expr name="name" id="6">
+                                      <vtype name="int32">
+                                      </vtype>
+                                    </expr>
+                                    <expr name="name" id="9">
+                                      <vtype name="int32">
+                                      </vtype>
+                                    </expr>
+                                  </indices>
+                                  <vtype name="float64">
+                                  </vtype>
+                                </expr>
+                              </lhs>
+                              <rhs>
+                                <expr boundscheck="1" name="index" negative="1">
+                                  <aname>
+                                    <expr name="name" id="1">
+                                      <vtype ndims="2" layout="strides" name="array">
+                                        <vtype name="float64">
+                                        </vtype>
+                                      </vtype>
+                                    </expr>
+                                  </aname>
+                                  <indices>
+                                    <expr name="name" id="9">
+                                      <vtype name="int32">
+                                      </vtype>
+                                    </expr>
+                                    <expr name="name" id="7">
+                                      <vtype name="int32">
+                                      </vtype>
+                                    </expr>
+                                  </indices>
+                                  <vtype name="float64">
+                                  </vtype>
+                                </expr>
+                              </rhs>
+                              <vtype name="float64">
+                              </vtype>
+                            </expr>
+                          </rhs>
+                          <vtype name="float64">
+                          </vtype>
+                        </expr>
+                      </rhs>
+                      <lhs>
+                        <expr name="name" id="8">
+                          <vtype name="float64">
+                          </vtype>
+                        </expr>
+                      </lhs>
+                    </stmt>
+                  </stmt>
+                </body>
+              </stmt>
+              <stmt name="assignstmt">
+                <rhs>
+                  <expr name="name" id="8">
+                    <vtype name="float64">
+                    </vtype>
+                  </expr>
+                </rhs>
+                <lhs>
+                  <expr boundscheck="1" name="index" negative="1">
+                    <aname>
+                      <expr name="name" id="2">
+                        <vtype ndims="2" layout="strides" name="array">
+                          <vtype name="float64">
+                          </vtype>
+                        </vtype>
+                      </expr>
+                    </aname>
+                    <indices>
+                      <expr name="name" id="6">
+                        <vtype name="int32">
+                        </vtype>
+                      </expr>
+                      <expr name="name" id="7">
+                        <vtype name="int32">
+                        </vtype>
+                      </expr>
+                    </indices>
+                    <vtype name="float64">
+                    </vtype>
+                  </expr>
+                </lhs>
+              </stmt>
+            </stmt>
+          </body>
+        </stmt>
+      </stmt>
+    </body>
+  </function>
 </module>
 

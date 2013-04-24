@@ -1,4 +1,4 @@
-<module name="mandel">
+<module name="mandelbrot">
   <function id="mandelbrot">
     <vtype name="func">
       <intypes>
@@ -135,7 +135,7 @@
             <expr name="domain">
               <range>
                 <stop>
-                  <expr name="name" id="1">
+                  <expr name="name" id="0">
                     <vtype name="int32">
                     </vtype>
                   </expr>
@@ -909,6 +909,26 @@
     <body>
       <stmt name="stmtlist">
         <stmt name="pforstmt">
+          <privates>
+            <sym id="10">
+            </sym>
+            <sym id="11">
+            </sym>
+            <sym id="12">
+            </sym>
+            <sym id="13">
+            </sym>
+            <sym id="14">
+            </sym>
+            <sym id="15">
+            </sym>
+            <sym id="16">
+            </sym>
+            <sym id="17">
+            </sym>
+            <sym id="18">
+            </sym>
+          </privates>
           <itervars>
             <sym id="8">
             </sym>
@@ -919,7 +939,7 @@
             <expr name="domain">
               <range>
                 <stop>
-                  <expr name="name" id="1">
+                  <expr name="name" id="0">
                     <vtype name="int32">
                     </vtype>
                   </expr>

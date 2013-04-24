@@ -229,17 +229,21 @@ Context VCompiler::stmtCodeGen(Statement *stmt, SymTable *symTable) {
 
 Context VCompiler::pForStmtCodeGen(PforStmt *stmt, SymTable *symTable) {
 	Context cntxt;
+	string ompStr;
 
 	cout << getOpenmpFlag() << endl;
 	if (getOpenmpFlag()) {
 
 		vector<int> privateVec = stmt->getPrivateVars();
 
-		string ompStr = "#pragma omp parallel for";
+		 ompStr = "#pragma omp parallel for";
 		if (privateVec.size() > 0) {
-			ompStr += " private(" + privateVec[0];
+			string priVar=symTable->getName(privateVec[0]);
+			ompStr += " private(" + priVar;
+			cout<<"privateVar   "<<priVar<<endl;
 			for (int i = 1; i < privateVec.size(); i++) {
-				ompStr += "," + privateVec[i];
+				cout<<"ompStr   "<<ompStr<<endl;
+				ompStr += "," + symTable->getName(privateVec[i]);
 			}
 			ompStr += ")";
 		}

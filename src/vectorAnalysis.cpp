@@ -3,7 +3,6 @@
 
 void VectorAnalysis::analyse(StmtList *stmt) {
 	bool val;
-
 	for (int i = 0; i < stmt->getNumChildren(); i++) {
 		if (invalidLoop) {
 			break;
