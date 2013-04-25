@@ -236,14 +236,23 @@ Context VCompiler::pForStmtCodeGen(PforStmt *stmt, SymTable *symTable) {
 
 		vector<int> privateVec = stmt->getPrivateVars();
 
-		 ompStr = "#pragma omp parallel for";
+		ompStr = "#pragma omp parallel for";
 		if (privateVec.size() > 0) {
-			string priVar=symTable->getName(privateVec[0]);
+
+			string priVar = symTable->getName(privateVec[0]);
 			ompStr += " private(" + priVar;
-			cout<<"privateVar   "<<priVar<<endl;
+			if (symTable->getType(privateVec[0]).get()->getBasicType()
+					== VType::ARRAY_TYPE) {
+				ompStr += "_data";
+			}
+			cout << "privateVar   " << priVar << endl;
 			for (int i = 1; i < privateVec.size(); i++) {
-				cout<<"ompStr   "<<ompStr<<endl;
+				cout << "ompStr   " << ompStr << endl;
 				ompStr += "," + symTable->getName(privateVec[i]);
+				if (symTable->getType(privateVec[i]).get()->getBasicType()
+						== VType::ARRAY_TYPE) {
+					ompStr += "_data";
+				}
 			}
 			ompStr += ")";
 		}
