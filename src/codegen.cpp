@@ -39,7 +39,7 @@ Context VCompiler::scalarTypeCodeGen(ScalarType *vtype) {
 
 	switch (vtype->getScalarTag()) {
 	case ScalarType::SCALAR_INT:
-		cntxt.addStmt("long");
+		cntxt.addStmt("int");
 		break;
 	case ScalarType::SCALAR_FLOAT:
 
@@ -67,9 +67,9 @@ Context VCompiler::arrayTypeCodeGen(ArrayType* type, SymTable *symTable) {
 }
 Context VCompiler::moduleCodeGen(VModule *vm) {
 	Context cntxt;
-	cntxt.addStmt("#include<math.h> \n");
-	cntxt.addStmt("#include<matrixOps.hpp>\n");
-	cntxt.addStmt("#include<sse.hpp>\n");
+	cntxt.addStmt("#include\"math.h\" \n");
+	cntxt.addStmt("#include\"matrixOps.hpp\"\n");
+	cntxt.addStmt("#include\"sse.hpp\"\n");
 	vector<VFunction*> funcList = vm->m_funcs;
 	for (int i = 0; i < funcList.size(); i++) {
 
@@ -151,9 +151,6 @@ Context VCompiler::funcCodeGen(VFunction *func) {
 		argType = argCntxt.getAllStmt()[0];
 		str += "," + argType + " " + argName;
 
-		//if argument is an array
-		/*if (func->getSymTable()->getType(id).get()->getBasicType() == 2)
-		 str += "[]";*/
 	}
 	str += ")\n{\n";
 	cntxt.addStmt(str);
@@ -190,13 +187,15 @@ Context VCompiler::funcCodeGen(VFunction *func) {
 			convert << DATA_OFFSET;
 
 			cntxt.addStmt(
-					tempCntxt.getAllStmt()[0] + " *" + name + "_data=*(" + name
-							+ "+" + convert.str() + ") ;\n");
+					tempCntxt.getAllStmt()[0] + " *" + name + "_data= (*"
+							+ tempCntxt.getAllStmt()[0] + "**) ((char*)" + name
+							+ "+" + convert.str() + ")) ;\n");
 			convert.str("");
 			convert << DIM_OFFSET;
 			cntxt.addStmt(
-					"long *" + symTable->getName(idVec[i]) + "_dim = *(" + name
-							+ "+" + convert.str() + ") ;\n");
+					"long *" + symTable->getName(idVec[i])
+							+ "_dim = (*(long**) ((char*)" + name + "+"
+							+ convert.str() + ")) ;\n");
 			convert.str("");
 		}
 	}
@@ -245,7 +244,7 @@ Context VCompiler::pForStmtCodeGen(PforStmt *stmt, SymTable *symTable) {
 					== VType::ARRAY_TYPE) {
 				ompStr += "_data";
 			}
-			cout << "privateVar   " << priVar << endl;
+
 			for (int i = 1; i < privateVec.size(); i++) {
 				cout << "ompStr   " << ompStr << endl;
 				ompStr += "," + symTable->getName(privateVec[i]);
@@ -287,7 +286,9 @@ Context VCompiler::pForStmtCodeGen(PforStmt *stmt, SymTable *symTable) {
 		cntxt.addStmt(bodyVec[i]);
 
 	}
-	cntxt.addStmt("}\n");
+	for (int i = 0; i < iterVar.size(); i++) {
+		cntxt.addStmt("}\n");
+	}
 	return cntxt;
 }
 Context VCompiler::returnStmtCodeGen(ReturnStmt *stmt, SymTable *symTable) {

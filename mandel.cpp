@@ -1,22 +1,22 @@
-entered parallel for
-0
-#include<math.h> 
-void mandelbrot(long m,long n,double xmax,double xmin,double ymax,double ymin,void* A,long kmax)
+#include"math.h" 
+#include"matrixOps.hpp"
+#include"sse.hpp"
+void mandelbrot(int m,int n,double xmax,double xmin,double ymax,double ymin,void* A,int kmax)
 {
-	long i;
-	long j;
+	int i;
+	int j;
 	double cr;
 	double ci;
 	double zr;
 	double zi;
-	long k;
+	int k;
 	double magnitude;
-	long condition;
+	int condition;
 	double z2r;
 	double z2i;
-	double *A_data=*(A+30) ;
-	long *A_dim = *(A+10) ;
-	for(i=0;i<n;i=i+1)
+	double *A_data= (double*) (A+16) ;
+	long *A_dim = (long*) (A+32) ;
+	for(i=0;i<m;i=i+1)
 	{
 		for(j=0;j<n;j=j+1)
 		{
@@ -56,22 +56,23 @@ void mandelbrot(long m,long n,double xmax,double xmin,double ymax,double ymin,vo
 	return ;
 }
 
-void mandelbrotp(long m,long n,double xmax,double xmin,double ymax,double ymin,void* A,long kmax)
+void mandelbrotp(int m,int n,double xmax,double xmin,double ymax,double ymin,void* A,int kmax)
 {
-	long i;
-	long j;
+	int i;
+	int j;
 	double cr;
 	double ci;
 	double zr;
 	double zi;
-	long k;
+	int k;
 	double magnitude;
-	long condition;
+	int condition;
 	double z2r;
 	double z2i;
-	double *A_data=*(A+30) ;
-	long *A_dim = *(A+10) ;
-	for(i=0;i<n;i=i+1)
+	double *A_data= (double*) (A+16) ;
+	long *A_dim = (long*) (A+32) ;
+	#pragma omp parallel for private(cr,ci,zr,zi,k,magnitude,condition,z2r,z2i)
+	for(i=0;i<m;i=i+1)
 	{
 		for(j=0;j<n;j=j+1)
 		{
@@ -109,7 +110,4 @@ void mandelbrotp(long m,long n,double xmax,double xmin,double ymax,double ymin,v
 		}
 		return ;
 	}
-
-module name 
-file name 
-written to output
+}

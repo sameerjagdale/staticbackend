@@ -35,8 +35,8 @@ class XmlNode(object):
         s = s + "<"+self.name
         for k in self.attribs:
             s = s+' '+k+'="'+str(self.attribs[k])+'"'
-        if 'name' in self.attribs:
-            print(self.attribs['name'])
+        #if 'name' in self.attribs:
+            #print(self.attribs['name'])
         s=s+'>\n'
         for child in self.children:
             child.offset = self.offset + 2
@@ -445,7 +445,7 @@ def genExprCode(fnc,expr,simplify=True):
                     for i in range(len(argrets)-1):
                         retlist.append(argrets[i])
                     argxml = argrets[-1]
-                    print(argxml.toXML())
+                    #print(argxml.toXML())
                     for child in argxml.children:
                         if child.name=='range':
                             xmlnode.addChild(child)
@@ -535,7 +535,7 @@ def genStmtCode(fnc,stmt):
         ifbodystmtlist.addAttribute('name','stmtlist')
         ifbodynode.addChild(ifbodystmtlist)
         xmlnode.addChild(ifbodynode)
-        print('body',stmt.body,'orelse',stmt.orelse)
+        #print('body',stmt.body,'orelse',stmt.orelse)
         for child in stmt.body:
             childlist = genStmtCode(fnc,child)
             for childStmt in childlist:
@@ -554,6 +554,15 @@ def genStmtCode(fnc,stmt):
         if isinstance(stmt.iter,ast.Call):
             if stmt.iter.func.id=='PAR':
                 xmlnode.addAttribute('name','pforstmt')
+                if len(stmt.iter.args)>1:
+                    privatesCall = stmt.iter.args[1]
+                    privatesNode = XmlNode('privates')
+                    for privateVar in privatesCall.args:
+                        varNode = XmlNode('sym')
+                        varNode.addAttribute('id',fnc.strToIdMap[privateVar.s])
+                        privatesNode.addChild(varNode)
+                    xmlnode.addChild(privatesNode)
+                        #print(privateVar,fnc.strToIdMap[privateVar.s])
                 isParallel = True
         if not isParallel:
             xmlnode.addAttribute('name','forstmt')
@@ -629,7 +638,6 @@ def genFuncCode(fnc):
             
 
 def inferExprType(fnc,expr):
-    #print type(expr)
     exprtype = None
     if isinstance(expr,ast.Name):
         nameid = fnc.strToIdMap[expr.id]
@@ -660,7 +668,8 @@ def inferExprType(fnc,expr):
             raise Exception('Slices are unimplemented')
         exprtype = arrayIndexType(basetype,indextypes)
     elif isinstance(expr,ast.Call):
-        #print(expr.func)
+        if expr.func.id=='privates':
+            return None
         for arg in expr.args:
             inferExprType(fnc,arg)
         if expr.func.id=='range':
@@ -696,6 +705,7 @@ def inferExprType(fnc,expr):
             raise Exception('prod not yet implemented')
     else:
         #must be constant
+        #print(expr)
         val = expr.n
         if isinstance(val,int):
             exprtype = Int32()

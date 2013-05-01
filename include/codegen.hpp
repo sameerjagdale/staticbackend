@@ -16,9 +16,9 @@
 #include<stdlib.h>
 #include <vectorAnalysis.hpp>
 //using namespace VRaptor;
-#define DIM_OFFSET 10
+#define DIM_OFFSET 32
 #define SIZE_OFFSET 20
-#define DATA_OFFSET 30
+#define DATA_OFFSET 16
 using std::vector;
 using std::string;
 namespace VRaptor {
