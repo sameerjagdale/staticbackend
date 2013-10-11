@@ -5,7 +5,7 @@
 #include <sstream>
 using namespace std;
 using namespace VRaptor;
-
+/*
 string readFile(const string& fname){
 	ifstream f(fname.c_str());
 	stringstream buf;
@@ -24,3 +24,4 @@ int main(int argc,char **argv){
 	VModule *m = VModule::readFromString(s);
 	cout<<"Read file"<<endl;
 }
+*/

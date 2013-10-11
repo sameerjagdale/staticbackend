@@ -110,7 +110,7 @@ public:
 	int getNumArgs(){return m_intypes.size();}
     int getNumReturns();
 };
-
+typedef shared_ptr<FuncType> FuncTypePtr;
 
 }
 

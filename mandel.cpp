@@ -14,8 +14,8 @@ void mandelbrot(int m,int n,double xmax,double xmin,double ymax,double ymin,void
 	int condition;
 	double z2r;
 	double z2i;
-	double *A_data= (double*) (A+16) ;
-	long *A_dim = (long*) (A+32) ;
+	double *A_data= (*double**) ((char*)A+16)) ;
+	long *A_dim = (*(long**) ((char*)A+32)) ;
 	for(i=0;i<m;i=i+1)
 	{
 		for(j=0;j<n;j=j+1)
@@ -69,9 +69,8 @@ void mandelbrotp(int m,int n,double xmax,double xmin,double ymax,double ymin,voi
 	int condition;
 	double z2r;
 	double z2i;
-	double *A_data= (double*) (A+16) ;
-	long *A_dim = (long*) (A+32) ;
-	#pragma omp parallel for private(cr,ci,zr,zi,k,magnitude,condition,z2r,z2i)
+	double *A_data= (*double**) ((char*)A+16)) ;
+	long *A_dim = (*(long**) ((char*)A+32)) ;
 	for(i=0;i<m;i=i+1)
 	{
 		for(j=0;j<n;j=j+1)
@@ -108,6 +107,7 @@ void mandelbrotp(int m,int n,double xmax,double xmin,double ymax,double ymin,voi
 			}
 			(*(A_data+i*A_dim[1]+j)) = magnitude;
 		}
-		return ;
 	}
+	return ;
 }
+

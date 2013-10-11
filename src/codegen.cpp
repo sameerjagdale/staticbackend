@@ -34,37 +34,6 @@ void Context::addStmt(const string stmt) {
 	list.push_back(stmt);
 }
 
-Context VCompiler::scalarTypeCodeGen(ScalarType *vtype) {
-	Context cntxt;
-
-	switch (vtype->getScalarTag()) {
-	case ScalarType::SCALAR_INT:
-		cntxt.addStmt("int");
-		break;
-	case ScalarType::SCALAR_FLOAT:
-
-		cntxt.addStmt("double");
-		break;
-	case ScalarType::SCALAR_BOOL:
-		cntxt.addStmt("bool");
-		break;
-	default:
-		cntxt.addStmt("void");
-	}
-	return cntxt;
-}
-Context VCompiler::arrayTypeCodeGen(ArrayType* type, SymTable *symTable) {
-	Context cntxt;
-
-	/*Context tempCntxt = scalarTypeCodeGen(
-	 (ScalarType*) type->getElementType().get());
-	 if (tempCntxt.getAllStmt().size() > 0) {
-
-	 cntxt.addStmt(tempCntxt.getAllStmt()[0] + "*");
-	 }*/
-	cntxt.addStmt("void*");
-	return cntxt;
-}
 Context VCompiler::moduleCodeGen(VModule *vm) {
 	Context cntxt;
 	cntxt.addStmt("#include\"math.h\" \n");
@@ -81,19 +50,52 @@ Context VCompiler::moduleCodeGen(VModule *vm) {
 
 	return cntxt;
 }
-Context VCompiler::vTypeCodeGen(VType* vType, SymTable *symTable) {
+Context VCompiler::scalarTypeCodeGen(ScalarTypePtr vtype) {
+	Context cntxt;
+	switch (vtype->getScalarTag()) {
+	case ScalarType::SCALAR_INT:
+		cntxt.addStmt("int");
+		break;
+	case ScalarType::SCALAR_FLOAT:
+
+		cntxt.addStmt("double");
+		break;
+	case ScalarType::SCALAR_BOOL:
+		cntxt.addStmt("bool");
+		break;
+	default:
+		cntxt.addStmt("void");
+	}
+	return cntxt;
+}
+Context VCompiler::arrayTypeCodeGen(ArrayTypePtr type, SymTable *symTable) {
+	Context cntxt;
+
+	/*Context tempCntxt = scalarTypeCodeGen(
+	 (ScalarType*) type->getElementType().get());
+	 if (tempCntxt.getAllStmt().size() > 0) {
+
+	 cntxt.addStmt(tempCntxt.getAllStmt()[0] + "*");
+	 }*/
+	cntxt.addStmt("void*");
+	return cntxt;
+}
+
+Context VCompiler::vTypeCodeGen(VTypePtr vType, SymTable *symTable) {
 	Context cntxt;
 
 	switch (vType->getBasicType()) {
 	case VType::SCALAR_TYPE:
-		cntxt = scalarTypeCodeGen((ScalarType*) vType);
+		cntxt = scalarTypeCodeGen(static_pointer_cast<ScalarType>(vType));
 		break;
 	case VType::DOMAIN_TYPE:
+	#ifdef DEBUG
 		cout << "cannot generate code for domain type" << endl;
+	#endif	
 		break;
 	case VType::ARRAY_TYPE:
 
-		cntxt = arrayTypeCodeGen((ArrayType*) vType, symTable);
+		cntxt = arrayTypeCodeGen(static_pointer_cast<ArrayType>(vType) , symTable);
 
 		break;
 	case VType::UNIT_TYPE:
@@ -101,6 +103,9 @@ Context VCompiler::vTypeCodeGen(VType* vType, SymTable *symTable) {
 
 		break;
 	default:
+	#ifdef DEBUG
+		std::cout<<"Entering default case in vTypeCodeGen"<<std::endl;
+	#endif	
 		cntxt.addStmt("void");
 		break;
 	}
@@ -111,8 +116,9 @@ Context VCompiler::vTypeCodeGen(VType* vType, SymTable *symTable) {
 Context VCompiler::funcCodeGen(VFunction *func) {
 	Context cntxt;
 	Context argCntxt;
-	FuncType *funcType = (FuncType*) func->getType().get();
-	VType* returnType = funcType->getReturnType(0).get();
+	FuncTypePtr funcType = static_pointer_cast<FuncType>(func->getType());
+	//TODO : Deal with multiple return types
+	VTypePtr returnType = funcType->getReturnType(0);
 	string ret;
 	Context retCntxt = vTypeCodeGen(returnType, func->getSymTable());
 	//function signature
@@ -129,7 +135,7 @@ Context VCompiler::funcCodeGen(VFunction *func) {
 		id = func->m_args[0].m_id;
 		argName = func->getSymTable()->getName(id);
 
-		argCntxt = vTypeCodeGen(func->getSymTable()->getType(id).get(),
+		argCntxt = vTypeCodeGen(func->getSymTable()->getType(id),
 				func->getSymTable());
 
 		if (argCntxt.getAllStmt().size() <= 0) {
@@ -146,7 +152,7 @@ Context VCompiler::funcCodeGen(VFunction *func) {
 	for (int i = 1; i < func->m_args.size(); i++) {
 		id = func->m_args[i].m_id;
 		argName = func->getSymTable()->getName(id);
-		argCntxt = vTypeCodeGen(func->getSymTable()->getType(id).get(),
+		argCntxt = vTypeCodeGen(func->getSymTable()->getType(id),
 				func->getSymTable());
 		argType = argCntxt.getAllStmt()[0];
 		str += "," + argType + " " + argName;
@@ -166,7 +172,7 @@ Context VCompiler::funcCodeGen(VFunction *func) {
 
 		}
 		if (j == func->m_args.size()) {
-			VType* type = symTable->getType(i).get();
+			VTypePtr type = symTable->getType(i);
 			Context varCntxt = vTypeCodeGen(type, func->getSymTable());
 			string varType = varCntxt.getAllStmt()[0];
 			string varName = symTable->getName(i);
@@ -177,11 +183,11 @@ Context VCompiler::funcCodeGen(VFunction *func) {
 	ostringstream convert;
 
 	for (int i = 0; i < idVec.size(); i++) {
-		VType *vtype = symTable->getType(idVec[i]).get();
+		VTypePtr vtype = symTable->getType(idVec[i]);
 		if (vtype->getBasicType() == VType::ARRAY_TYPE) {
-			ArrayType *array = (ArrayType*) vtype;
+			ArrayTypePtr array = static_pointer_cast<ArrayType>(vtype);
 			Context tempCntxt = scalarTypeCodeGen(
-					array->getElementType().get());
+					array->getElementType());
 
 			string name = symTable->getName(idVec[i]);
 			convert << DATA_OFFSET;
@@ -200,13 +206,13 @@ Context VCompiler::funcCodeGen(VFunction *func) {
 		}
 	}
 	//function body
-	StmtListPtr listPtr = func->getBody();
-	StmtList *stmtList = listPtr.get();
+	StmtListPtr stmtList = func->getBody();
+
 
 	for (int i = 0; i < stmtList->getNumChildren(); i++) {
 
-		StmtPtr stmtPtr = stmtList->getChild(i);
-		Statement *stmt = stmtPtr.get();
+		StmtPtr stmt = stmtList->getChild(i);
+		
 		Context tempCntxt = stmtCodeGen(stmt, func->getSymTable());
 		vector<string> tempVector = tempCntxt.getAllStmt();
 		for (int j = 0; j < tempVector.size(); j++) {
@@ -219,18 +225,19 @@ Context VCompiler::funcCodeGen(VFunction *func) {
 	return cntxt;
 }
 
-Context VCompiler::stmtCodeGen(Statement *stmt, SymTable *symTable) {
+Context VCompiler::stmtCodeGen(StmtPtr stmt, SymTable *symTable) {
 	Context cntxt;
 	cntxt = stmtTypeCodeGen(stmt, symTable);
 
 	return cntxt;
 }
 
-Context VCompiler::pForStmtCodeGen(PforStmt *stmt, SymTable *symTable) {
+Context VCompiler::pForStmtCodeGen(PforStmtPtr stmt, SymTable *symTable) {
 	Context cntxt;
 	string ompStr;
-
+#ifdef DEBUG
 	cout << getOpenmpFlag() << endl;
+#endif
 	if (getOpenmpFlag()) {
 
 		vector<int> privateVec = stmt->getPrivateVars();
@@ -258,10 +265,10 @@ Context VCompiler::pForStmtCodeGen(PforStmt *stmt, SymTable *symTable) {
 		ompStr += "\n";
 		cntxt.addStmt(ompStr);
 	}
-	StmtPtr sPtr = stmt->getBody();
-	Statement * bodyStmt = sPtr.get();
+	StmtPtr bodyStmt = stmt->getBody();
+	
 	ExpressionPtr domainPtr = stmt->getDomain();
-	Context domainCntxt = exprTypeCodeGen(domainPtr.get(), symTable);
+	Context domainCntxt = exprTypeCodeGen(domainPtr, symTable);
 
 	string initStmt, compStmt, iterStmt;
 	vector<string> domainVec = domainCntxt.getAllStmt();
@@ -291,7 +298,7 @@ Context VCompiler::pForStmtCodeGen(PforStmt *stmt, SymTable *symTable) {
 	}
 	return cntxt;
 }
-Context VCompiler::returnStmtCodeGen(ReturnStmt *stmt, SymTable *symTable) {
+Context VCompiler::returnStmtCodeGen(ReturnStmtPtr stmt, SymTable *symTable) {
 	Context cntxt;
 
 	vector<int> ridVec = stmt->getRids();
@@ -308,26 +315,26 @@ Context VCompiler::returnStmtCodeGen(ReturnStmt *stmt, SymTable *symTable) {
 	cntxt.addStmt(retStr + ";\n");
 	return cntxt;
 }
-Context VCompiler::breakStmtCodeGen(BreakStmt *stmt) {
+Context VCompiler::breakStmtCodeGen(BreakStmtPtr stmt) {
 	Context cntxt;
 	cntxt.addStmt("break;\n");
 	return cntxt;
 }
-Context VCompiler::continueStmtCodeGen(ContinueStmt *stmt) {
+Context VCompiler::continueStmtCodeGen(ContinueStmtPtr stmt) {
 	Context cntxt;
 	cntxt.addStmt("continue;\n");
 	return cntxt;
 }
 
-Context VCompiler::ifStmtCodeGen(IfStmt *stmt, SymTable *symTable) {
+Context VCompiler::ifStmtCodeGen(IfStmtPtr stmt, SymTable *symTable) {
 	Context cntxt;
 	// condition
-	Expression *expr = stmt->getCond().get();
+	ExpressionPtr expr = stmt->getCond();
 	Context condCntxt = exprTypeCodeGen(expr, symTable);
 	cntxt.addStmt("if(" + condCntxt.getAllStmt()[0] + ")\n");
 	cntxt.addStmt("{\n");
 	// if block
-	Statement *ifBlockStmt = stmt->getIfBranch().get();
+	StmtPtr ifBlockStmt = stmt->getIfBranch();
 	Context ifCntxt = stmtTypeCodeGen(ifBlockStmt, symTable);
 	for (int i = 0; i < ifCntxt.getAllStmt().size(); i++) {
 		cntxt.addStmt(ifCntxt.getAllStmt()[i]);
@@ -338,7 +345,7 @@ Context VCompiler::ifStmtCodeGen(IfStmt *stmt, SymTable *symTable) {
 		cntxt.addStmt("else\n");
 		cntxt.addStmt("{\n");
 
-		Statement *elseBlockStmt = stmt->getElseBranch().get();
+		StmtPtr elseBlockStmt = stmt->getElseBranch();
 		Context elseCntxt = stmtTypeCodeGen(elseBlockStmt, symTable);
 		for (int i = 0; i < elseCntxt.getAllStmt().size(); i++) {
 			cntxt.addStmt(elseCntxt.getAllStmt()[i]);
@@ -347,15 +354,15 @@ Context VCompiler::ifStmtCodeGen(IfStmt *stmt, SymTable *symTable) {
 	}
 	return cntxt;
 }
-Context VCompiler::whileStmtCodeGen(WhileStmt *stmt, SymTable *symTable) {
+Context VCompiler::whileStmtCodeGen(WhileStmtPtr stmt, SymTable *symTable) {
 	Context cntxt;
 	//condition
-	Expression *condExpr = stmt->getCond().get();
+	ExpressionPtr condExpr = stmt->getCond();
 	Context condCntxt = exprTypeCodeGen(condExpr, symTable);
 	cntxt.addStmt("while(" + condCntxt.getAllStmt()[0] + ")\n");
 	cntxt.addStmt("{\n");
 	//body
-	Statement* bodyStmt = stmt->getBody().get();
+	StmtPtr bodyStmt = stmt->getBody();
 	Context bodyCntxt = stmtTypeCodeGen(bodyStmt, symTable);
 	for (int i = 0; i < bodyCntxt.getAllStmt().size(); i++) {
 		cntxt.addStmt(bodyCntxt.getAllStmt()[i]);
@@ -363,39 +370,39 @@ Context VCompiler::whileStmtCodeGen(WhileStmt *stmt, SymTable *symTable) {
 	cntxt.addStmt("}\n");
 	return cntxt;
 }
-Context VCompiler::stmtTypeCodeGen(Statement *stmt, SymTable *symTable) {
+Context VCompiler::stmtTypeCodeGen(StmtPtr stmt, SymTable *symTable) {
 	Context cntxt;
 
 	switch (stmt->getStmtType()) {
 	case 0: //Assignment Statement
-		cntxt = assignStmtCodeGen((AssignStmt*) stmt, symTable);
+		cntxt = assignStmtCodeGen(static_pointer_cast<AssignStmt> (stmt), symTable);
 		break;
 	case 1: // IF statement
-		cntxt = ifStmtCodeGen((IfStmt*) stmt, symTable);
+		cntxt = ifStmtCodeGen(static_pointer_cast<IfStmt> (stmt), symTable);
 		break;
 	case 2: // while statement
-		cntxt = whileStmtCodeGen((WhileStmt*) stmt, symTable);
+		cntxt = whileStmtCodeGen(static_pointer_cast<WhileStmt> (stmt), symTable);
 		break;
 	case 3: // for statement
-		cntxt = forStmtCodeGen((ForStmt*) stmt, symTable);
+		cntxt = forStmtCodeGen(static_pointer_cast<ForStmt>(stmt), symTable);
 		break;
 	case 4: //parallel for
-		cntxt = pForStmtCodeGen((PforStmt*) stmt, symTable);
+		cntxt = pForStmtCodeGen(static_pointer_cast<PforStmt>(stmt), symTable);
 		break;
 	case 5: // list statement
 
-		cntxt = stmtListCodeGen((StmtList*) stmt, symTable);
+		cntxt = stmtListCodeGen(static_pointer_cast<StmtList>(stmt) , symTable);
 		break;
 	case 6: //break statement
-		cntxt = breakStmtCodeGen((BreakStmt*) stmt);
+		cntxt = breakStmtCodeGen(static_pointer_cast<BreakStmt> (stmt));
 		break;
 	case 7: // continue statement
-		cntxt = continueStmtCodeGen((ContinueStmt*) stmt);
+		cntxt = continueStmtCodeGen(static_pointer_cast<ContinueStmt> (stmt));
 		break;
 	case 8: // bound check statement
 		break;
 	case 9: //return
-		cntxt = returnStmtCodeGen((ReturnStmt*) stmt, symTable);
+		cntxt = returnStmtCodeGen(static_pointer_cast<ReturnStmt> (stmt), symTable);
 		break;
 	case 10: // statement refincr
 
@@ -409,39 +416,39 @@ Context VCompiler::stmtTypeCodeGen(Statement *stmt, SymTable *symTable) {
 	}
 	return cntxt;
 }
-Context VCompiler::mMultExprCodeGen(MmultExpr* expr, SymTable *symTable) {
+Context VCompiler::mMultExprCodeGen(MmultExprPtr expr, SymTable *symTable) {
 	Context cntxt;
 
-	if (expr->getLhs().get()->getExprType() != Expression::NAME_EXPR) {
+	if (expr->getLhs()->getExprType() != Expression::NAME_EXPR) {
 		cout << "LHS not name expression. Cannot generate code" << endl;
 		return cntxt;
 	}
-	if (expr->getRhs().get()->getExprType() != Expression::NAME_EXPR) {
+	if (expr->getRhs()->getExprType() != Expression::NAME_EXPR) {
 		cout << "RHS not name expression. Cannot generate code" << endl;
 		return cntxt;
 	}
-	Context lcntxt = exprTypeCodeGen(expr->getLhs().get(), symTable);
-	Context rcntxt = exprTypeCodeGen(expr->getRhs().get(), symTable);
+	Context lcntxt = exprTypeCodeGen(expr->getLhs(), symTable);
+	Context rcntxt = exprTypeCodeGen(expr->getRhs(), symTable);
 	string lstr = lcntxt.getAllStmt()[0];
 	string rstr = rcntxt.getAllStmt()[0];
-	NameExpr *lexpr = (NameExpr*) expr->getLhs().get();
-	VType *ltype = symTable->getType(lexpr->getId()).get();
+	NameExprPtr lexpr = static_pointer_cast<NameExpr> (expr->getLhs());
+	VTypePtr ltype = symTable->getType(lexpr->getId());
 	if (ltype->getBasicType() != VType::ARRAY_TYPE) {
 		cout << "variable is not an array. cannot generate multiplication code"
 				<< endl;
 		return cntxt;
 	}
-	ArrayType *larray = (ArrayType*) ltype;
-	Context ltypeCntxt = scalarTypeCodeGen(larray->getElementType().get());
-	NameExpr *rexpr = (NameExpr*) expr->getRhs().get();
-	VType *rtype = symTable->getType(rexpr->getId()).get();
+	ArrayTypePtr larray = static_pointer_cast<ArrayType> (ltype);
+	Context ltypeCntxt = scalarTypeCodeGen(larray->getElementType());
+	NameExprPtr rexpr = static_pointer_cast<NameExpr> (expr->getRhs());
+	VTypePtr rtype = symTable->getType(rexpr->getId());
 	if (rtype->getBasicType() != VType::ARRAY_TYPE) {
 		cout << "variable is not an array. cannot generate multiplication code"
 				<< endl;
 		return cntxt;
 	}
-	ArrayType *rarray = (ArrayType*) rtype;
-	Context rtypeCntxt = scalarTypeCodeGen(rarray->getElementType().get());
+	ArrayTypePtr rarray = static_pointer_cast<ArrayType>(rtype);
+	Context rtypeCntxt = scalarTypeCodeGen(rarray->getElementType());
 	string ltypeStr;
 	if (ltypeCntxt.getAllStmt().size() > 0) {
 		ltypeStr = ltypeCntxt.getAllStmt()[0];
@@ -463,73 +470,73 @@ Context VCompiler::mMultExprCodeGen(MmultExpr* expr, SymTable *symTable) {
 					+ rname + "_dim[1]" + ")");
 	return cntxt;
 }
-Context VCompiler::exprTypeCodeGen(Expression* expr, SymTable *symTable) {
+Context VCompiler::exprTypeCodeGen(ExpressionPtr expr, SymTable *symTable) {
 	Context cntxt;
 
 	switch (expr->getExprType()) {
 	case 0: // CONST_EXPR
-		cntxt = constExprCodeGen((ConstExpr*) expr, symTable);
+		cntxt = constExprCodeGen(static_pointer_cast<ConstExpr>(expr), symTable);
 		break;
 	case 1: //Name expression
-		cntxt = nameExprCodeGen((NameExpr*) expr, symTable);
+		cntxt = nameExprCodeGen(static_pointer_cast<NameExpr>(expr), symTable);
 		break;
 	case 2: //Plus expression
 		//cout << "plus expression reached" << endl;
-		cntxt = plusExprCodeGen((PlusExpr*) expr, symTable);
+		cntxt = plusExprCodeGen(static_pointer_cast<PlusExpr>(expr), symTable);
 		break;
 	case 3: //minus expression
-		cntxt = minusExprCodeGen((MinusExpr*) expr, symTable);
+		cntxt = minusExprCodeGen(static_pointer_cast<MinusExpr>(expr), symTable);
 		break;
 	case 4: //mult expr
-		cntxt = multExprCodeGen((MultExpr*) expr, symTable);
+		cntxt = multExprCodeGen(static_pointer_cast<MultExpr>(expr), symTable);
 		break;
 	case 5: // division expr
-		cntxt = divExprCodeGen((DivExpr*) expr, symTable);
+		cntxt = divExprCodeGen(static_pointer_cast<DivExpr>(expr), symTable);
 		break;
 	case 6: //index expr
-		cntxt = indexExprCodeGen((IndexExpr*) expr, symTable);
+		cntxt = indexExprCodeGen(static_pointer_cast<IndexExpr>(expr), symTable);
 		break;
 	case 7: //Negate expr
-		cntxt = negateExprCodeGen((NegateExpr*) expr, symTable);
+		cntxt = negateExprCodeGen(static_pointer_cast<NegateExpr>(expr), symTable);
 		break;
 	case 8: // matrix multiplication
-		cntxt = mMultExprCodeGen((MmultExpr*) expr, symTable);
+		cntxt = mMultExprCodeGen(static_pointer_cast<MmultExpr>(expr), symTable);
 		break;
 	case 9: //Transpose
 		break;
 	case 10:  // greater than
-		cntxt = gtExprCodeGen((GtExpr*) expr, symTable);
+		cntxt = gtExprCodeGen(static_pointer_cast<GtExpr>(expr), symTable);
 		break;
 	case 11: //greater than equal to
-		cntxt = geqExprCodeGen((GeqExpr*) expr, symTable);
+		cntxt = geqExprCodeGen(static_pointer_cast<GeqExpr>(expr), symTable);
 		break;
 	case 12: // less than
-		cntxt = ltExprCodeGen((LtExpr*) expr, symTable);
+		cntxt = ltExprCodeGen(static_pointer_cast<LtExpr> (expr), symTable);
 		break;
 	case 13: // less than equal to
-		cntxt = leqExprCodeGen((LeqExpr*) expr, symTable);
+		cntxt = leqExprCodeGen(static_pointer_cast<LeqExpr>(expr), symTable);
 		break;
 	case 14: // and expression
-		cntxt = andExprCodeGen((AndExpr*) expr, symTable);
+		cntxt = andExprCodeGen(static_pointer_cast<AndExpr> (expr), symTable);
 		break;
 	case 15: // or expression
-		cntxt = orExprCodeGen((OrExpr*) expr, symTable);
+		cntxt = orExprCodeGen(static_pointer_cast<OrExpr> (expr), symTable);
 		break;
 	case 16: // not expression
-		cntxt = notExprCodeGen((NotExpr*) expr, symTable);
+		cntxt = notExprCodeGen(static_pointer_cast<NotExpr>( expr), symTable);
 		break;
 	case 17: // function call expression
 
 		break;
 	case 18: // domain expression
-		cntxt = domainExprCodeGen((DomainExpr*) expr, symTable);
+		cntxt = domainExprCodeGen(static_pointer_cast<DomainExpr>(expr), symTable);
 		break;
 	case 19:  //dim expression
 		break;
 	case 20: // dim vector
 		break;
 	case 21: // library call expression
-		cntxt = libCallExprCodeGen((LibCallExpr*) expr, symTable);
+		cntxt = libCallExprCodeGen(static_pointer_cast<LibCallExpr> (expr), symTable);
 		break;
 	case 22: // alloc expression
 		break;
@@ -547,7 +554,7 @@ Context VCompiler::exprTypeCodeGen(Expression* expr, SymTable *symTable) {
 	}
 	return cntxt;
 }
-Context VCompiler::libCallExprCodeGen(LibCallExpr *expr, SymTable *symTable) {
+Context VCompiler::libCallExprCodeGen(LibCallExprPtr expr, SymTable *symTable) {
 	Context cntxt;
 	string funcName;
 	switch (expr->getCode()) {
@@ -594,24 +601,24 @@ Context VCompiler::libCallExprCodeGen(LibCallExpr *expr, SymTable *symTable) {
 
 	}
 	ExpressionPtr basePtr = expr->getBaseExpr();
-	Context baseCntxt = exprTypeCodeGen(basePtr.get(), symTable);
+	Context baseCntxt = exprTypeCodeGen(basePtr, symTable);
 	funcName += baseCntxt.getAllStmt()[0] + ")";
 	return cntxt;
 }
-Context VCompiler::funCallExprCodeGen(FuncallExpr *expr, SymTable *symTable) {
+Context VCompiler::funCallExprCodeGen(FuncallExprPtr expr, SymTable *symTable) {
 	Context cntxt;
 
 	NameExprPtr namePtr = expr->getFuncName();
-	Context nameCntxt = exprTypeCodeGen(namePtr.get(), symTable);
+	Context nameCntxt = exprTypeCodeGen(namePtr, symTable);
 	string name = nameCntxt.getAllStmt()[0];
 	name = name + "(";
 	ExpressionPtrVector vecPtr = expr->getArgs();
-	Context tempCntxt = exprTypeCodeGen(vecPtr[0].get(), symTable);
+	Context tempCntxt = exprTypeCodeGen(vecPtr[0], symTable);
 	if (tempCntxt.getAllStmt().size() > 0) {
 		name += tempCntxt.getAllStmt()[0];
 	}
 	for (int i = 1; vecPtr.size(); i++) {
-		tempCntxt = exprTypeCodeGen(vecPtr[i].get(), symTable);
+		tempCntxt = exprTypeCodeGen(vecPtr[i], symTable);
 		if (tempCntxt.getAllStmt().size() > 0) {
 			name += ("," + tempCntxt.getAllStmt()[0]);
 		}
@@ -620,24 +627,24 @@ Context VCompiler::funCallExprCodeGen(FuncallExpr *expr, SymTable *symTable) {
 	cntxt.addStmt(name);
 	return cntxt;
 }
-Context VCompiler::notExprCodeGen(NotExpr *expr, SymTable *symTable) {
+Context VCompiler::notExprCodeGen(NotExprPtr expr, SymTable *symTable) {
 	Context cntxt;
-	Context baseCntxt = exprTypeCodeGen(expr->getBaseExpr().get(), symTable);
+	Context baseCntxt = exprTypeCodeGen(expr->getBaseExpr(), symTable);
 	string baseStr = baseCntxt.getAllStmt()[0];
 	cntxt.addStmt("(!" + baseStr + "");
 	return cntxt;
 }
-Context VCompiler::negateExprCodeGen(NegateExpr *expr, SymTable *symTable) {
+Context VCompiler::negateExprCodeGen(NegateExprPtr expr, SymTable *symTable) {
 	Context cntxt;
-	Context baseCntxt = exprTypeCodeGen(expr->getBaseExpr().get(), symTable);
+	Context baseCntxt = exprTypeCodeGen(expr->getBaseExpr(), symTable);
 	string baseStr = baseCntxt.getAllStmt()[0];
 	cntxt.addStmt("(-" + baseStr + "");
 	return cntxt;
 }
-Context VCompiler::constExprCodeGen(ConstExpr *expr, SymTable *symTable) {
+Context VCompiler::constExprCodeGen(ConstExprPtr expr, SymTable *symTable) {
 	Context cntxt;
 	ostringstream convert;
-	ScalarType* sc = (ScalarType*) expr->getType().get();
+	ScalarTypePtr sc = static_pointer_cast<ScalarType> (expr->getType());
 	convert.str("");
 	int intVal;
 	double floatVal;
@@ -657,13 +664,13 @@ Context VCompiler::constExprCodeGen(ConstExpr *expr, SymTable *symTable) {
 	cntxt.addStmt(convert.str());
 	return cntxt;
 }
-Context VCompiler::domainExprCodeGen(DomainExpr *expr, SymTable *symTable) {
+Context VCompiler::domainExprCodeGen(DomainExprPtr expr, SymTable *symTable) {
 	Context cntxt, strtCntxt, endCntxt, stepCntxt;
 	vector<string> vec;
 	for (int j = 0; j < expr->getNdims(); j++) {
 		Context tempCntxt;
-		ExpressionPtr startPtr = expr->getStartExpr(j);
-		Expression *startExpr = startPtr.get();
+		ExpressionPtr startExpr = expr->getStartExpr(j);
+		
 
 		tempCntxt = exprTypeCodeGen(startExpr, symTable);
 		vec = tempCntxt.getAllStmt();
@@ -672,8 +679,8 @@ Context VCompiler::domainExprCodeGen(DomainExpr *expr, SymTable *symTable) {
 			strtCntxt.addStmt(vec[i]);
 		}
 
-		ExpressionPtr endPtr = expr->getStopExpr(j);
-		Expression* endExpr = endPtr.get();
+		ExpressionPtr endExpr = expr->getStopExpr(j);
+		
 
 		tempCntxt = exprTypeCodeGen(endExpr, symTable);
 		vec = tempCntxt.getAllStmt();
@@ -681,8 +688,8 @@ Context VCompiler::domainExprCodeGen(DomainExpr *expr, SymTable *symTable) {
 			endCntxt.addStmt(vec[i]);
 		}
 
-		ExpressionPtr stepPtr = expr->getStepExpr(j);
-		Expression * stepExpr = stepPtr.get();
+		ExpressionPtr stepExpr = expr->getStepExpr(j);
+		
 
 		tempCntxt = exprTypeCodeGen(stepExpr, symTable);
 		vec = tempCntxt.getAllStmt();
@@ -707,26 +714,26 @@ Context VCompiler::domainExprCodeGen(DomainExpr *expr, SymTable *symTable) {
 	}
 	return cntxt;
 }
-Context VCompiler::nameExprCodeGen(NameExpr *expr, SymTable *symTable) {
+Context VCompiler::nameExprCodeGen(NameExprPtr expr, SymTable *symTable) {
 	Context cntxt;
 
 //	VTypePtr vptr = expr->getType();
 //	VType *vtype = vptr.get();
 
 	string name = symTable->getName(expr->getId());
-	VType* vtype = symTable->getType(expr->getId()).get();
+	VTypePtr vtype = symTable->getType(expr->getId());
 
 	cntxt.addStmt(name);
 	return cntxt;
 }
-Context VCompiler::binaryExprCodeGen(BinaryExpr*expr, SymTable *symTable) {
+Context VCompiler::binaryExprCodeGen(BinaryExprPtr expr, SymTable *symTable) {
 	Context cntxt;
 	ExpressionPtr lPtr = expr->getLhs();
 	ExpressionPtr rPtr = expr->getRhs();
 
-	Context lCntxt = exprTypeCodeGen(lPtr.get(), symTable);
+	Context lCntxt = exprTypeCodeGen(lPtr, symTable);
 
-	Context rCntxt = exprTypeCodeGen(rPtr.get(), symTable);
+	Context rCntxt = exprTypeCodeGen(rPtr, symTable);
 	vector<string> lVec = lCntxt.getAllStmt();
 	vector<string> rVec = rCntxt.getAllStmt();
 	string lStr, rStr;
@@ -751,7 +758,7 @@ Context VCompiler::binaryExprCodeGen(BinaryExpr*expr, SymTable *symTable) {
 	cntxt.addStmt(rStr);
 	return cntxt;
 }
-Context VCompiler::leqExprCodeGen(LeqExpr*expr, SymTable *symTable) {
+Context VCompiler::leqExprCodeGen(LeqExprPtr expr, SymTable *symTable) {
 	Context cntxt;
 	Context tempCntxt = binaryExprCodeGen(expr, symTable);
 	string lStr = tempCntxt.getAllStmt()[0];
@@ -759,7 +766,7 @@ Context VCompiler::leqExprCodeGen(LeqExpr*expr, SymTable *symTable) {
 	cntxt.addStmt(lStr + " <= " + rStr);
 	return cntxt;
 }
-Context VCompiler::andExprCodeGen(AndExpr*expr, SymTable *symTable) {
+Context VCompiler::andExprCodeGen(AndExprPtr expr, SymTable *symTable) {
 	Context cntxt;
 	Context tempCntxt = binaryExprCodeGen(expr, symTable);
 	string lStr = tempCntxt.getAllStmt()[0];
@@ -767,7 +774,7 @@ Context VCompiler::andExprCodeGen(AndExpr*expr, SymTable *symTable) {
 	cntxt.addStmt(lStr + " && " + rStr);
 	return cntxt;
 }
-Context VCompiler::orExprCodeGen(OrExpr *expr, SymTable *symTable) {
+Context VCompiler::orExprCodeGen(OrExprPtr expr, SymTable *symTable) {
 	Context cntxt;
 	Context tempCntxt = binaryExprCodeGen(expr, symTable);
 	string lStr = tempCntxt.getAllStmt()[0];
@@ -775,7 +782,7 @@ Context VCompiler::orExprCodeGen(OrExpr *expr, SymTable *symTable) {
 	cntxt.addStmt(lStr + " || " + rStr);
 	return cntxt;
 }
-Context VCompiler::minusExprCodeGen(MinusExpr *expr, SymTable *symTable) {
+Context VCompiler::minusExprCodeGen(MinusExprPtr expr, SymTable *symTable) {
 	Context cntxt;
 	Context tempCntxt = binaryExprCodeGen(expr, symTable);
 	string lStr = tempCntxt.getAllStmt()[0];
@@ -783,7 +790,7 @@ Context VCompiler::minusExprCodeGen(MinusExpr *expr, SymTable *symTable) {
 	cntxt.addStmt(lStr + " - " + rStr);
 	return cntxt;
 }
-Context VCompiler::ltExprCodeGen(LtExpr*expr, SymTable *symTable) {
+Context VCompiler::ltExprCodeGen(LtExprPtr expr, SymTable *symTable) {
 	Context cntxt;
 	Context tempCntxt = binaryExprCodeGen(expr, symTable);
 	string lStr = tempCntxt.getAllStmt()[0];
@@ -791,7 +798,7 @@ Context VCompiler::ltExprCodeGen(LtExpr*expr, SymTable *symTable) {
 	cntxt.addStmt(lStr + " < " + rStr);
 	return cntxt;
 }
-Context VCompiler::gtExprCodeGen(GtExpr* expr, SymTable *symTable) {
+Context VCompiler::gtExprCodeGen(GtExprPtr expr, SymTable *symTable) {
 	Context cntxt;
 	Context tempCntxt = binaryExprCodeGen(expr, symTable);
 	string lStr = tempCntxt.getAllStmt()[0];
@@ -799,7 +806,7 @@ Context VCompiler::gtExprCodeGen(GtExpr* expr, SymTable *symTable) {
 	cntxt.addStmt(lStr + " > " + rStr);
 	return cntxt;
 }
-Context VCompiler::geqExprCodeGen(GeqExpr* expr, SymTable *symTable) {
+Context VCompiler::geqExprCodeGen(GeqExprPtr expr, SymTable *symTable) {
 	Context cntxt;
 	Context tempCntxt = binaryExprCodeGen(expr, symTable);
 	string lStr = tempCntxt.getAllStmt()[0];
@@ -808,7 +815,7 @@ Context VCompiler::geqExprCodeGen(GeqExpr* expr, SymTable *symTable) {
 	return cntxt;
 }
 
-Context VCompiler::multExprCodeGen(MultExpr*expr, SymTable *symTable) {
+Context VCompiler::multExprCodeGen(MultExprPtr expr, SymTable *symTable) {
 	Context cntxt;
 	Context tempCntxt = binaryExprCodeGen(expr, symTable);
 	string lStr = tempCntxt.getAllStmt()[0];
@@ -816,7 +823,7 @@ Context VCompiler::multExprCodeGen(MultExpr*expr, SymTable *symTable) {
 	cntxt.addStmt(lStr + " * " + rStr);
 	return cntxt;
 }
-Context VCompiler::divExprCodeGen(DivExpr *expr, SymTable *symTable) {
+Context VCompiler::divExprCodeGen(DivExprPtr expr, SymTable *symTable) {
 	Context cntxt;
 	Context tempCntxt = binaryExprCodeGen(expr, symTable);
 	string lStr = tempCntxt.getAllStmt()[0];
@@ -824,27 +831,27 @@ Context VCompiler::divExprCodeGen(DivExpr *expr, SymTable *symTable) {
 	cntxt.addStmt(lStr + " / " + rStr);
 	return cntxt;
 }
-Context VCompiler::plusExprCodeGen(PlusExpr* expr, SymTable *symTable) {
+Context VCompiler::plusExprCodeGen(PlusExprPtr expr, SymTable *symTable) {
 	Context cntxt;
 
-	if (expr->getLhs().get()->getExprType() == Expression::NAME_EXPR
-			&& expr->getRhs().get()->getExprType() == Expression::NAME_EXPR) {
-		NameExpr * lnameExpr = (NameExpr*) expr->getLhs().get();
-		NameExpr * rnameExpr = (NameExpr*) expr->getRhs().get();
-		if (symTable->getType(rnameExpr->getId()).get()->getBasicType()
+	if (expr->getLhs()->getExprType() == Expression::NAME_EXPR
+			&& expr->getRhs()->getExprType() == Expression::NAME_EXPR) {
+		NameExprPtr lnameExpr = static_pointer_cast<NameExpr> (expr->getLhs());
+		NameExprPtr rnameExpr = static_pointer_cast<NameExpr>(expr->getRhs());
+		if (symTable->getType(rnameExpr->getId())->getBasicType()
 				== VType::ARRAY_TYPE
-				&& symTable->getType(lnameExpr->getId()).get()->getBasicType()
+				&& symTable->getType(lnameExpr->getId())->getBasicType()
 						== VType::ARRAY_TYPE) {
 			string lnameStr = symTable->getName(lnameExpr->getId());
 			string rnameStr = symTable->getName(rnameExpr->getId());
-			ArrayType *larray = (ArrayType*) symTable->getType(
-					lnameExpr->getId()).get();
-			ArrayType *rarray = (ArrayType*) symTable->getType(
-					rnameExpr->getId()).get();
+			ArrayTypePtr larray = static_pointer_cast<ArrayType>( symTable->getType(
+					lnameExpr->getId()));
+			ArrayTypePtr rarray = static_pointer_cast<ArrayType>( symTable->getType(
+					rnameExpr->getId()));
 			Context ltypeCntxt = scalarTypeCodeGen(
-					larray->getElementType().get());
+					larray->getElementType());
 			Context rtypeCntxt = scalarTypeCodeGen(
-					rarray->getElementType().get());
+					rarray->getElementType());
 			string ltypeStr = ltypeCntxt.getAllStmt()[0];
 			if (ltypeStr.compare(rtypeCntxt.getAllStmt()[0]) != 0) {
 				cout << "types not same. cannot generate codes to add arrays"
@@ -867,10 +874,10 @@ Context VCompiler::plusExprCodeGen(PlusExpr* expr, SymTable *symTable) {
 
 	return cntxt;
 }
-Context VCompiler::indexExprCodeGen(IndexExpr *expr, SymTable *symTable) {
+Context VCompiler::indexExprCodeGen(IndexExprPtr expr, SymTable *symTable) {
 	Context cntxt;
 
-	Expression *nameExpr = expr->getNameExpr().get();
+	ExpressionPtr nameExpr = expr->getNameExpr();
 
 	Context nameCntxt = exprTypeCodeGen(nameExpr, symTable);
 	string name, nameData;
@@ -882,7 +889,7 @@ Context VCompiler::indexExprCodeGen(IndexExpr *expr, SymTable *symTable) {
 
 	ExpressionPtrVector indxPtrVec = expr->getIndices();
 	for (int i = 0; i < indxPtrVec.size(); i++) {
-		Expression *indxExpr = indxPtrVec[i].get();
+		ExpressionPtr indxExpr = indxPtrVec[i];
 		Context indxCntxt = exprTypeCodeGen(indxExpr, symTable);
 		if (indxCntxt.getAllStmt().size() > 0) {
 			string indxStr = indxCntxt.getAllStmt()[0];
@@ -906,23 +913,23 @@ Context VCompiler::indexExprCodeGen(IndexExpr *expr, SymTable *symTable) {
 	return cntxt;
 
 }
-Context VCompiler::refOpStmtCodeGen(RefOpStmt stmt, SymTable *symTable) {
+Context VCompiler::refOpStmtCodeGen(RefOpStmtPtr stmt, SymTable *symTable) {
 	Context cntxt;
 
 	return cntxt;
 }
-Context VCompiler::forStmtCodeGen(ForStmt *stmt, SymTable *symTable) {
+Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) {
 	Context cntxt;
 	bool vectorise = true;
 	VectorAnalysis analysis;
 
 	StmtPtr sPtr = stmt->getBody();
 
-	StmtList * bodyStmt = (StmtList*) sPtr.get();
+	StmtListPtr  bodyStmt = static_pointer_cast<StmtList> (sPtr);
 
 	ExpressionPtr domainPtr = stmt->getDomain();
 
-	Context domainCntxt = exprTypeCodeGen(domainPtr.get(), symTable);
+	Context domainCntxt = exprTypeCodeGen(domainPtr, symTable);
 
 	string initStmt, compStmt, iterStmt;
 	vector<string> domainVec = domainCntxt.getAllStmt();
@@ -942,19 +949,19 @@ Context VCompiler::forStmtCodeGen(ForStmt *stmt, SymTable *symTable) {
 
 		string size = domainVec[iterVar.size()];
 		for (int i = 0; i < bodyStmt->getNumChildren(); i++) {
-			if (analysis.canVectorise(i)) {
+			/*if (analysis.canVectorise(i)) {
 
-				Context tempCntxt = vectoriseStmt(
-						(AssignStmt*) bodyStmt->getChild(i).get(), size,
-						symTable);
+				//Context tempCntxt = vectoriseStmt(
+				//		(AssignStmt*) bodyStmt->getChild(i).get(), size,
+				//		symTable);
 
 				for (int i = 0; i < tempCntxt.getAllStmt().size(); i++) {
 					cntxt.addStmt(tempCntxt.getAllStmt()[i]);
 				}
 
-			} else {
+			}*/ /*else {*/
 				flag = false;
-			}
+			/*}*/
 		}
 		if (flag) {
 			return cntxt;
@@ -984,15 +991,15 @@ Context VCompiler::forStmtCodeGen(ForStmt *stmt, SymTable *symTable) {
 	}
 	return cntxt;
 }
-Context VCompiler::assignStmtCodeGen(AssignStmt *stmt, SymTable *symTable) {
+Context VCompiler::assignStmtCodeGen(AssignStmtPtr stmt, SymTable *symTable) {
 	Context cntxt;
 
 	vector<ExpressionPtr> lExprVec = stmt->getLhs();
 	string lStr;
 
 	for (int i = 0; i < lExprVec.size(); i++) {
-		ExpressionPtr lExprPtr = lExprVec[i];
-		Expression* lExpr = lExprPtr.get();
+		ExpressionPtr lExpr = lExprVec[i];
+		
 
 		Context lCntxt = exprTypeCodeGen(lExpr, symTable);
 		vector<string> lVec = lCntxt.getAllStmt();
@@ -1000,8 +1007,8 @@ Context VCompiler::assignStmtCodeGen(AssignStmt *stmt, SymTable *symTable) {
 			lStr += lVec[i];
 		}
 	}
-	ExpressionPtr rExprPtr = stmt->getRhs();
-	Expression* rExpr = rExprPtr.get();
+	ExpressionPtr rExpr = stmt->getRhs();
+	
 	Context rCntxt = exprTypeCodeGen(rExpr, symTable);
 	vector<string> rExprVec = rCntxt.getAllStmt();
 	string rStr;
@@ -1013,12 +1020,12 @@ Context VCompiler::assignStmtCodeGen(AssignStmt *stmt, SymTable *symTable) {
 
 	return cntxt;
 }
-Context VCompiler::stmtListCodeGen(StmtList *stmt, SymTable *symTable) {
+Context VCompiler::stmtListCodeGen(StmtListPtr stmt, SymTable *symTable) {
 	Context cntxt;
 
 	for (int i = 0; i < stmt->getNumChildren(); i++) {
 
-		Statement *childStmt = stmt->getChild(i).get();
+		StmtPtr childStmt = stmt->getChild(i);
 		Context tempCntxt = stmtTypeCodeGen(childStmt, symTable);
 		for (int i = 0; i < tempCntxt.getAllStmt().size(); i++) {
 			cntxt.addStmt(tempCntxt.getAllStmt()[i]);
@@ -1027,7 +1034,7 @@ Context VCompiler::stmtListCodeGen(StmtList *stmt, SymTable *symTable) {
 	return cntxt;
 }
 
-Context VCompiler::vectoriseStmt(AssignStmt *stmt, string size,
+/*Context VCompiler::vectoriseStmt(AssignStmt *stmt, string size,
 		SymTable *symTable) {
 	Context cntxt;
 	IndexExpr *lhs = (IndexExpr*) stmt->getLhs()[0].get();
@@ -1060,7 +1067,7 @@ Context VCompiler::vectoriseStmt(AssignStmt *stmt, string size,
 		break;
 	}
 	return cntxt;
-}
+}*/
 void VCompiler::setOpenMpFlag(bool val) {
 	enableOpenMP = val;
 }
